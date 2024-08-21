@@ -1,4 +1,4 @@
-#include <sqs/__sqs_unit_test.h>
+#include <sqs/test/sqs_test.h>
 
 #include "cli.h"
 
@@ -9,23 +9,30 @@
 //----------------------------------------------------------------
 SqsBool
 cliRunTests( void ) {
+  SqsTestQuadraticFeedback feedback[5] = {0};
+  SqsQuadraticTest tests[5] = {
+    { { +0.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS, +0.0000000000000000f, +0.0000000000000000f, } },
+    { { +1.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT,  +0.0000000000000000f, +0.0000000000000000f, } },
+    { { +1.0f, +0.0f, +1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS,  +0.0000000000000000f, +0.0000000000000000f, } },
+    { { +0.0f, +2.0f, +1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT,  -0.5000000000000000f, +0.0000000000000000f, } },
+    { { +1.0f, -2.0f, -1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_TWO_ROOTS, -0.4142135623730951f, +2.4142135623730951f, } },
+  };
 
-  size_t testCount = 0;
-  sqsTestQuadraticRunStandardTests(sqsSolveQuadratic, &testCount, NULL);
+  size_t testCount = sizeof(tests) / sizeof(tests[0]);
 
-  SqsTestQuadraticFeedback *feedbacks = NULL;
-  if ((feedbacks = malloc(sizeof(SqsTestQuadraticFeedback) * testCount)) == NULL)
-    return SQS_FALSE;
+  SqsQuadraticTestSet testSet = {
+    .tests = tests,
+    .testCount = sizeof(tests) / sizeof(tests[0]),
+  };
 
-  sqsTestQuadraticRunStandardTests(sqsSolveQuadratic, &testCount, feedbacks);
+  // test set
+  sqsTestQuadraticRunSet(sqsSolveQuadratic, &testSet, feedback);
 
   SqsBool result = SQS_TRUE;
-  for (size_t i = 0; i < testCount; i++) {
-    result &= feedbacks[i].ok;
-    sqsPrintTestQuadraticFeedback(stdout, (int)i + 1, feedbacks + i);
+  for (uint32_t i = 0; i < testCount; i++) {
+    result &= feedback[i].ok;
+    sqsPrintTestQuadraticFeedback(stdout, i + 1, feedback);
   }
-
-  free(feedbacks);
 
   return result;
 } // cliRunTests function end

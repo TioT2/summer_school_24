@@ -19,18 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\cli\cli.c" />
-    <ClCompile Include="src\cli\cli_parameter_iterator.c" />
-    <ClCompile Include="src\sqs\sqs.c" />
-    <ClCompile Include="src\sqs\__sqs_unit_test.c" />
-    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\cli\cli.cpp" />
+    <ClCompile Include="src\cli\cli_parameter_iterator.cpp" />
+    <ClCompile Include="src\sqs\sqs.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sqs\test\sqs_test.cpp" />
+    <ClCompile Include="src\sqs\test\sqs_test_set.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cli\cli.h" />
     <ClInclude Include="src\sqs\sqs.h" />
     <ClInclude Include="src\sqs\sqs_common.h" />
     <ClInclude Include="src\sqs\sqs_solver.h" />
-    <ClInclude Include="src\sqs\__sqs_unit_test.h" />
+    <ClInclude Include="src\sqs\test\sqs_test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -92,6 +93,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>./src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,6 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>./src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,6 +127,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>./src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,6 +144,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>./src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

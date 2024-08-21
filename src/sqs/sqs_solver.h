@@ -15,7 +15,7 @@ typedef enum __SqsQuadraticSolveStatus {
   SQS_QUADRATIC_SOLVE_STATUS_TWO_ROOTS,
 
   /// Root is any number
-  SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER,
+  SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS,
 } SqsQuadraticSolveStatus;
 
 /// @brief quadratic equation coefficents representation structure

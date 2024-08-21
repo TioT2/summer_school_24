@@ -10,28 +10,31 @@
     <Filter Include="Source\Command line interface utils">
       <UniqueIdentifier>{2615f10a-638c-4430-a62e-e2d786d9e4a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Equation solver\Test">
+      <UniqueIdentifier>{f8922532-65c5-437d-96ca-8198454f5ff1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.c">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="src\sqs\__sqs_unit_test.c">
+    <ClCompile Include="src\sqs\sqs.cpp">
       <Filter>Source\Equation solver</Filter>
     </ClCompile>
-    <ClCompile Include="src\sqs\sqs.c">
-      <Filter>Source\Equation solver</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cli\cli_parameter_iterator.c">
+    <ClCompile Include="src\cli\cli_parameter_iterator.cpp">
       <Filter>Source\Command line interface utils</Filter>
     </ClCompile>
-    <ClCompile Include="src\cli\cli.c">
+    <ClCompile Include="src\cli\cli.cpp">
       <Filter>Source\Command line interface utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqs\test\sqs_test.cpp">
+      <Filter>Source\Equation solver\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqs\test\sqs_test_set.cpp">
+      <Filter>Source\Equation solver\Test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\sqs\__sqs_unit_test.h">
-      <Filter>Source\Equation solver</Filter>
-    </ClInclude>
     <ClInclude Include="src\sqs\sqs.h">
       <Filter>Source\Equation solver</Filter>
     </ClInclude>
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="src\cli\cli.h">
       <Filter>Source\Command line interface utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqs\test\sqs_test.h">
+      <Filter>Source\Equation solver\Test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

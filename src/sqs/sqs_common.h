@@ -25,4 +25,14 @@ typedef int SqsBool;
   #define SQS_BUILD_CONFIGURATION_RELEASE
 #endif
 
+#ifdef __cplusplus
+  #ifdef _MSC_VER
+    #define SQR_RESTRICT __restrict
+  #else
+    #define SQR_RESTRICT
+  #endif
+#else
+  #define SQR_RESTRICT restrict
+#endif
+
 #endif // !defined(SQS_COMMON_H_)

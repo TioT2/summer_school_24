@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "__sqs_unit_test.h"
+#include "sqs_test.h"
 
 void
 sqsPrintTestQuadraticFeedback(
@@ -14,9 +14,20 @@ sqsPrintTestQuadraticFeedback(
 
   fprintf(file, "TEST %3d: ", testIndex);
   if (feedback->ok) {
-    fprintf(file, CLI_SET_FOREGROUND_COLOR(0, 255, 0)"Ok"CLI_RESET_COLOR());
+    fprintf(
+      file, (
+        CLI_SET_FOREGROUND_COLOR(0, 255, 0)
+        "Ok"
+        CLI_RESET_COLOR()
+      )
+    );
   } else {
-    fprintf(file, CLI_SET_FOREGROUND_COLOR(255, 0, 0)"Error. Coefficents: (%f, %f, %f), Answer/Expected: "CLI_RESET_COLOR(),
+    fprintf(
+      file, (
+        CLI_SET_FOREGROUND_COLOR(255, 0, 0)
+        "Error. Coefficents: (%f, %f, %f), Answer/Expected: "
+        CLI_RESET_COLOR()
+      ),
       feedback->coefficents.a,
       feedback->coefficents.b,
       feedback->coefficents.c
@@ -34,19 +45,32 @@ void
 sqsTestQuadraticRunTest(
   SqsTestQuadraticFeedback *const feedback,
   const SqsTestQuadraticSolver solver,
-  const SqsQuadraticEquationCoefficents *const equation,
-  const SqsQuadraticSolution *const expectedSolution
+  const SqsQuadraticTest *const test
 ) {
   assert(feedback != NULL);
   assert(solver != NULL);
-  assert(equation != NULL);
-  assert(expectedSolution != NULL);
+  assert(test != NULL);
 
-  memcpy(&feedback->expectedSolution, expectedSolution, sizeof(SqsQuadraticSolution));
-  memcpy(&feedback->coefficents, equation, sizeof(SqsQuadraticEquationCoefficents));
-  solver(equation, &feedback->actualSolution);
+  memcpy(&feedback->expectedSolution, &test->expectedSolution, sizeof(SqsQuadraticSolution));
+  memcpy(&feedback->coefficents, &test->coefficents, sizeof(SqsQuadraticEquationCoefficents));
+  solver(&test->coefficents, &feedback->actualSolution);
   feedback->ok = sqsQuadraticSolutionEqual(&feedback->actualSolution, &feedback->expectedSolution);
 } // sqsTestQuadraticRunTest function end
+
+
+void
+sqsTestQuadraticRunSet(
+  const SqsTestQuadraticSolver solver,
+  const SqsQuadraticTestSet *const set,
+  SqsTestQuadraticFeedback *testFeedbacks
+) {
+  assert(solver != NULL);
+  assert(set != NULL);
+  assert(testFeedbacks != NULL);
+
+  for (int i = 0; i < set->testCount; i++)
+    sqsTestQuadraticRunTest(testFeedbacks + i, solver, set->tests + i);
+}
 
 void
 sqsTestQuadraticRunStandardTests(
@@ -57,11 +81,8 @@ sqsTestQuadraticRunStandardTests(
   assert(solver != NULL);
   assert(testFeedbackCount != NULL);
 
-  static const struct {
-    SqsQuadraticEquationCoefficents coefficents;
-    SqsQuadraticSolution expectedSolution;
-  } tests[] = {
-    { { +0.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER, +0.0000000000000000f, +0.0000000000000000f, } },
+  static const SqsQuadraticTest tests[] = {
+    { { +0.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS, +0.0000000000000000f, +0.0000000000000000f, } },
     { { +1.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT,   +0.0000000000000000f, +0.0000000000000000f, } },
     { { +1.0f, +0.0f, +1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS,   +0.0000000000000000f, +0.0000000000000000f, } },
     { { +0.0f, +2.0f, +1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT,   -0.5000000000000000f, +0.0000000000000000f, } },
@@ -76,12 +97,7 @@ sqsTestQuadraticRunStandardTests(
     return;
 
   for (int i = 0; i < TEST_COUNT; i++)
-    sqsTestQuadraticRunTest(
-      testFeedbacks + i,
-      solver,
-      &tests[i].coefficents,
-      &tests[i].expectedSolution
-    );
+    sqsTestQuadraticRunTest(testFeedbacks + i, solver, tests + i);
 } // sqsTestQuadraticRunStandardTests function end
 
 // __sqs_unit_test.c file end

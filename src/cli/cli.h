@@ -37,16 +37,16 @@ cliInitParameterIterator(
 //! @return next parameter, returns NULL if no more parameters provided
 //----------------------------------------------------------------
 const char *
-cliParameterIteratorNext( CliParameterIterator *const restrict this );
+cliParameterIteratorNext( CliParameterIterator *const SQR_RESTRICT _this );
 
 /// @brief Utility
 #define CLI_TO_STRING(t) #t
 
 /// @brief foreground color setting string generation macro
-#define CLI_SET_FOREGROUND_COLOR(red, green, blue) "\033[38;2;"CLI_TO_STRING(red)";"CLI_TO_STRING(green)";"CLI_TO_STRING(blue)"m"
+#define CLI_SET_FOREGROUND_COLOR(red, green, blue) "\033[38;2;" CLI_TO_STRING(red) ";" CLI_TO_STRING(green) ";" CLI_TO_STRING(blue) "m"
 
 /// @brief background color setting string generation macro
-#define CLI_SET_BACKGROUND_COLOR(red, green, blue) "\033[48;2;"CLI_TO_STRING(red)";"CLI_TO_STRING(green)";"CLI_TO_STRING(blue)"m"
+#define CLI_SET_BACKGROUND_COLOR(red, green, blue) "\033[48;2;" CLI_TO_STRING(red) ";" CLI_TO_STRING(green) ";" CLI_TO_STRING(blue) "m"
 
 /// @brief color resetting macro
 #define CLI_RESET_COLOR() "\033[39m\033[49m"

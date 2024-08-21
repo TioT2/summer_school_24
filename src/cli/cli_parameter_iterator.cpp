@@ -23,8 +23,8 @@ void cliInitParameterIterator( const int argc, const char **argv, CliParameterIt
 //! 
 //! @return next parameter, returns NULL if no more parameters provided
 //----------------------------------------------------------------
-const char * cliParameterIteratorNext( CliParameterIterator *const restrict this ) {
-  if (this->_index >= this->_argc)
+const char * cliParameterIteratorNext( CliParameterIterator *const SQR_RESTRICT _this ) {
+  if (_this->_index >= _this->_argc)
     return NULL;
-  return this->_argv[this->_index++];
+  return _this->_argv[_this->_index++];
 } // cliParameterIteratorNext function end

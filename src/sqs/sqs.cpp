@@ -16,7 +16,7 @@ void SQS_API sqsSolveQuadratic( const SqsQuadraticEquationCoefficents *const coe
   if (sqsFloatEqual(coefs->a, 0.0f)) {
     if (sqsFloatEqual(coefs->b, 0.0f)) {
       if (sqsFloatEqual(coefs->c, 0.0f)) {
-        solution->status = SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER;
+        solution->status = SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS;
         return;
       }
       solution->status = SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS;
@@ -67,7 +67,7 @@ void SQS_API sqsPrintQuadraticSolution( FILE *const stream, const SqsQuadraticSo
       fprintf(stream, "(%f, %f)", solution->result1, solution->result2);
       break;
     }
-    case SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER: {
+    case SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS: {
       fprintf(stream, "Any number");
       break;
     }
@@ -112,7 +112,7 @@ sqsQuadraticSolutionEqual( const SqsQuadraticSolution *const lhs, const SqsQuadr
     return SQS_FALSE;
 
   switch (lhs->status) {
-  case SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER:
+  case SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS:
   case SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS:
     return SQS_TRUE;
 

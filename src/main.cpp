@@ -4,7 +4,42 @@
 #include <assert.h>
 #include <math.h>
 
+// #include <signal.h>
+
 #include "cli/cli.h"
+#include "sqs/test/sqs_test.h"
+
+// void signalHandler( int signal ) {
+//   static const struct {
+//     const char *name;
+//     int signal;
+//   } signalNameTable[] = {
+//     {"SIGINT"  , SIGINT  },
+//     {"SIGILL"  , SIGILL  },
+//     {"SIGFPE"  , SIGFPE  },
+//     {"SIGSEGV" , SIGSEGV },
+//     {"SIGTERM" , SIGTERM },
+//     {"SIGBREAK", SIGBREAK},
+//     {"SIGABRT" , SIGABRT },
+//   };
+// 
+//   const char *signalName = "UNKNOWN";
+// 
+//   for (uint32_t i = 0, n = sizeof(signalNameTable) / sizeof(signalNameTable[0]); i < n; i++) {
+//     if (signalNameTable[i].signal == signal) {
+//       signalName = signalNameTable[i].name;
+//       break;
+//     }
+//   }
+// 
+//   printf(
+//     CLI_SET_FOREGROUND_COLOR(255, 0, 0)
+//     "!!SIGNAL: %s\n"
+//     CLI_RESET_COLOR(),
+//     signalName
+//   );
+//   exit(0);
+// }
 
 //----------------------------------------------------------------
 //! @brief project entry point
@@ -19,14 +54,14 @@ main(
   int argc,
   const char **argv
 ) {
+
+
   struct {
-    SqsBool enableTests;
     SqsBool enableMenu;
     SqsBool enableHelp;
   } config = {
-    .enableTests = SQS_FALSE,
-    .enableMenu = SQS_TRUE,
-    .enableHelp = SQS_FALSE,
+    .enableMenu  = SQS_TRUE,
+    .enableHelp  = SQS_FALSE,
   };
 
   CliParameterIterator parameterContext;
@@ -104,14 +139,6 @@ main(
       continue;
     }
 
-    // debug-only keys handling
-#ifdef SQS_BUILD_CONFIGURATION_DEBUG
-    if (strcmp(arg, "--test") == 0) {
-      config.enableTests = SQS_TRUE;
-      continue;
-    }
-#endif
-
     printf(
       CLI_SET_FOREGROUND_COLOR(255, 0, 0)
       "UNKNOWN KEY \"%s\"\n"
@@ -121,11 +148,16 @@ main(
     return 0;
   }
 
+  // signal(SIGINT  , signalHandler);
+  // signal(SIGILL  , signalHandler);
+  // signal(SIGFPE  , signalHandler);
+  // signal(SIGSEGV , signalHandler);
+  // signal(SIGTERM , signalHandler);
+  // signal(SIGBREAK, signalHandler);
+  // signal(SIGABRT , signalHandler);
+
   if (config.enableHelp)
     cliRunHelp();
-
-  if (config.enableTests)
-    cliRunTests();
 
   if (config.enableMenu)
     cliRunMenu();

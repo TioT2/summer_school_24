@@ -1,7 +1,7 @@
 #ifndef __SQS_UNIT_TEST_H_
 #define __SQS_UNIT_TEST_H_
 
-#include "sqs.h"
+#include "../sqs.h"
 #include "cli/cli.h"
 
 /// @brief Solver function type definition
@@ -14,6 +14,40 @@ typedef struct __SqsTestQuadraticFeedback {
   SqsQuadraticSolution            expectedSolution; // expected equation solution
   SqsQuadraticSolution            actualSolution;   // actual equation solution
 } SqsTestQuadraticFeedback;
+
+/// @brief quadratic test representation structure
+typedef struct __SqsQuadraticTest {
+  SqsQuadraticEquationCoefficents coefficents;      // test coefficents
+  SqsQuadraticSolution            expectedSolution; // expected test solution
+} SqsQuadraticTest;
+
+/// @brief set of test representation structure
+typedef struct __SqsQuadraticTestSet {
+  SqsQuadraticTest * tests;     // test array
+  size_t             testCount; // test array size
+} SqsQuadraticTestSet;
+
+//----------------------------------------------------------------
+//! @brief test set from string parsing function
+//!
+//! @param [in]  source test set source
+//! @param [out] set    set to write pointer
+//! 
+//! @return SQS_TRUE if parsed successfully, SQS_FALSE otherwise
+//----------------------------------------------------------------
+SqsBool
+sqsParseQuadraticTestSet(
+  const char *const source,
+  SqsQuadraticTestSet *const set
+);
+
+//----------------------------------------------------------------
+//! @brief test set destroying function
+//!
+//! @param [in] testSet test set to destroy
+//----------------------------------------------------------------
+void
+sqsDestroyQuadraticTestSet( SqsQuadraticTestSet *const testSet );
 
 //----------------------------------------------------------------
 //! @brief test feedback printing function
@@ -32,25 +66,23 @@ sqsPrintTestQuadraticFeedback(
 //----------------------------------------------------------------
 //! @brief single test performing function
 //!
-//! @param [out] feedback         feedback to write during test performing
-//! @param [in]  solver           tested solver
-//! @param [in]  equation         equation coefficents
-//! @param [in]  expectedSolution expected equation solution
+//! @param [out] feedback feedback to write during test performing
+//! @param [in]  solver   tested solver
+//! @param [in]  test     test pointer
 //----------------------------------------------------------------
 void
 sqsTestQuadraticRunTest(
   SqsTestQuadraticFeedback *const feedback,
   const SqsTestQuadraticSolver solver,
-  const SqsQuadraticEquationCoefficents *const equation,
-  const SqsQuadraticSolution *const expectedSolution
+  const SqsQuadraticTest *const test
 );
 
 //----------------------------------------------------------------
 //! @brief standard test set performing function
 //!
-//! @param [in]  solver            tested solver
-//! @param [out] testFeedbacksSize required minimal size of test feedback array
-//! @param [out] testFeedbacks     tests feedback array
+//! @param [in]  solver        tested solver
+//! @param [in]  set           test set to perform
+//! @param [out] testFeedbacks tests feedback array
 //! 
 //! @note testFeedbacks array may be null during first function call, \
 //!       in this case only testFeedbacksSize value will be filled,   \
@@ -58,9 +90,9 @@ sqsTestQuadraticRunTest(
 //!       every function invocation
 //----------------------------------------------------------------
 void
-sqsTestQuadraticRunStandardTests(
+sqsTestQuadraticRunSet(
   const SqsTestQuadraticSolver solver,
-  size_t *testFeedbacksSize,
+  const SqsQuadraticTestSet *const set,
   SqsTestQuadraticFeedback *testFeedbacks
 );
 
