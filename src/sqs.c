@@ -71,6 +71,9 @@ void SQS_API sqsPrintQuadraticSolution( FILE *const stream, const SqsQuadraticSo
       fprintf(stream, "Any number\n");
       break;
     }
+
+    default:
+      assert(SQS_FALSE);
   }
 } // sqsPrintfQuadraticSolution function end
 
@@ -85,6 +88,44 @@ SqsBool SQS_API sqsParseQuadraticEquationCoefficents( FILE *const stream, SqsQua
 
   return
     fscanf_s(stream, "%f %f %f", &dst->a, &dst->b, &dst->c) == 3 &&
+#ifdef SQS_BUILD_CONFIGURATION_DEBUG
     sqsValidateQuadraticEquationCoefficents(dst) // idk, should I include validation in parsing function
+#endif
   ;
 } // sqsParseQuadraticEquationCoefficents function end
+
+
+//----------------------------------------------------------------
+//! @brief quadratic equation solutions comparing function
+//!
+//! @param [in] lhs first solution
+//! @param [in] rhs second solution
+//!
+//! @return SQS_TRUE if solutions are same, SQS_FALSE otherwise
+//----------------------------------------------------------------
+SqsBool SQS_API
+sqsQuadraticSolutionEqual( const SqsQuadraticSolution *const lhs, const SqsQuadraticSolution *const rhs ) {
+  assert(lhs != NULL);
+  assert(rhs != NULL);
+
+  if (lhs->status != rhs->status)
+    return SQS_FALSE;
+
+  switch (lhs->status) {
+  case SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER:
+  case SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS:
+    return SQS_TRUE;
+
+  case SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT:
+    return sqsFloatEqual(lhs->result1, rhs->result1);
+
+  case SQS_QUADRATIC_SOLVE_STATUS_TWO_ROOTS:
+    return
+      sqsFloatEqual(lhs->result1, rhs->result1) && sqsFloatEqual(lhs->result2, rhs->result2) ||
+      sqsFloatEqual(lhs->result1, rhs->result2) && sqsFloatEqual(lhs->result2, rhs->result1) ;
+  
+  default:
+    assert(SQS_FALSE);
+    return SQS_FALSE;
+  }
+} // sqsCompareQuadraticSolutions function end

@@ -12,9 +12,21 @@
     <ClCompile Include="src\sqs_main.c">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="src\__sqs_unit_test.c">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\sqs.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqs_common.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqs_solver.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="src\__sqs_unit_test.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
