@@ -7,7 +7,7 @@
     <Filter Include="Source\Equation solver">
       <UniqueIdentifier>{a293e850-83c4-4d8d-9556-4c67d42abf50}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Command line interface">
+    <Filter Include="Source\Command line interface utils">
       <UniqueIdentifier>{2615f10a-638c-4430-a62e-e2d786d9e4a2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -22,7 +22,10 @@
       <Filter>Source\Equation solver</Filter>
     </ClCompile>
     <ClCompile Include="src\cli\cli_parameter_iterator.c">
-      <Filter>Source\Command line interface</Filter>
+      <Filter>Source\Command line interface utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cli\cli.c">
+      <Filter>Source\Command line interface utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +42,7 @@
       <Filter>Source\Equation solver</Filter>
     </ClInclude>
     <ClInclude Include="src\cli\cli.h">
-      <Filter>Source\Command line interface</Filter>
+      <Filter>Source\Command line interface utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

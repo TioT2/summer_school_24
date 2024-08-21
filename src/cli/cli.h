@@ -1,6 +1,8 @@
 #ifndef CLI_H_
 #define CLI_H_
 
+#include <sqs/sqs.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -48,5 +50,31 @@ cliParameterIteratorNext( CliParameterIterator *const restrict this );
 
 /// @brief color resetting macro
 #define CLI_RESET_COLOR() "\033[39m\033[49m"
+
+//----------------------------------------------------------------
+//! @brief stdin from console input clearing function
+//----------------------------------------------------------------
+void
+cliClearStdin( void );
+
+//----------------------------------------------------------------
+//! @brief test performing function
+//! 
+//! @return SQS_TRUE if all tests Ok, SQS_FALSE otherwise.
+//----------------------------------------------------------------
+SqsBool
+cliRunTests( void );
+
+//----------------------------------------------------------------
+//! @brief menu running function
+//----------------------------------------------------------------
+void
+cliRunMenu( void );
+
+//----------------------------------------------------------------
+//! @brief help running function
+//----------------------------------------------------------------
+void
+cliRunHelp( void );
 
 #endif // !defined(CLI_H_)

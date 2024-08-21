@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\cli\cli.c" />
     <ClCompile Include="src\cli\cli_parameter_iterator.c" />
     <ClCompile Include="src\sqs\sqs.c" />
     <ClCompile Include="src\sqs\__sqs_unit_test.c" />
