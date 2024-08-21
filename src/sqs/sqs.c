@@ -56,19 +56,19 @@ void SQS_API sqsPrintQuadraticSolution( FILE *const stream, const SqsQuadraticSo
 
   switch (solution->status) {
     case SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS: {
-      fprintf(stream, "No roots\n");
+      fprintf(stream, "Nothing");
       break;
     }
     case SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT: {
-      fprintf(stream, "Root: %f\n", solution->result1);
+      fprintf(stream, "%f", solution->result1);
       break;
     }
     case SQS_QUADRATIC_SOLVE_STATUS_TWO_ROOTS: {
-      fprintf(stream, "Roots: (%f, %f)\n", solution->result1, solution->result2);
+      fprintf(stream, "(%f, %f)", solution->result1, solution->result2);
       break;
     }
     case SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER: {
-      fprintf(stream, "Any number\n");
+      fprintf(stream, "Any number");
       break;
     }
 

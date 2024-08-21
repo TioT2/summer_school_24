@@ -18,6 +18,7 @@ typedef int SqsBool;
 /// @brief API)) calling convention
 #define SQS_API __cdecl
 
+// Set configuration flag
 #ifdef _DEBUG
   #define SQS_BUILD_CONFIGURATION_DEBUG
 #else

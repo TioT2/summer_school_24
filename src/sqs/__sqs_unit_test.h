@@ -2,6 +2,7 @@
 #define __SQS_UNIT_TEST_H_
 
 #include "sqs.h"
+#include "cli/cli.h"
 
 /// @brief Solver function type definition
 typedef void (SQS_API *SqsTestQuadraticSolver)( const SqsQuadraticEquationCoefficents *, SqsQuadraticSolution * );

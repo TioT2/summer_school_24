@@ -3,26 +3,6 @@
 
 #include "__sqs_unit_test.h"
 
-//----------------------------------------------------------------
-//! @brief small solution print function
-//!
-//! @param [in] file     file to print solution in
-//! @param [in] solution solution pointer
-//----------------------------------------------------------------
-static void
-sqsPrintSolution(
-  FILE *const file,
-  const SqsQuadraticSolution *const solution
-) {
-  switch (solution->status) {
-  case SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS   : fprintf(file, "NONE");                                           break;
-  case SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT   : fprintf(file, "%f", solution->result1);                          break;
-  case SQS_QUADRATIC_SOLVE_STATUS_TWO_ROOTS  : fprintf(file, "(%f, %f)", solution->result1, solution->result2); break;
-  case SQS_QUADRATIC_SOLVE_STATUS_ANY_NUMBER : fprintf(file, "ANY");                                            break;
-  default                                    : assert(SQS_FALSE);
-  }
-} // sqsPrintSolution function end
-
 void
 sqsPrintTestQuadraticFeedback(
   FILE *const file,
@@ -34,17 +14,17 @@ sqsPrintTestQuadraticFeedback(
 
   fprintf(file, "TEST %3d: ", testIndex);
   if (feedback->ok) {
-    fprintf(file, "Ok");
+    fprintf(file, CLI_SET_FOREGROUND_COLOR(0, 255, 0)"Ok"CLI_RESET_COLOR());
   } else {
-    fprintf(file, "Error. Coefficents: (%f, %f, %f), Answer/Expected: ",
+    fprintf(file, CLI_SET_FOREGROUND_COLOR(255, 0, 0)"Error. Coefficents: (%f, %f, %f), Answer/Expected: "CLI_RESET_COLOR(),
       feedback->coefficents.a,
       feedback->coefficents.b,
       feedback->coefficents.c
     );
 
-    sqsPrintSolution(file, &feedback->actualSolution);
+    sqsPrintQuadraticSolution(file, &feedback->actualSolution);
     fprintf(file, "/");
-    sqsPrintSolution(file, &feedback->expectedSolution);
+    sqsPrintQuadraticSolution(file, &feedback->expectedSolution);
   }
 
   fprintf(file, "\n");

@@ -4,30 +4,42 @@
     <Filter Include="Source">
       <UniqueIdentifier>{337f1176-e9b0-47c2-8bbc-960d06f74929}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Equation solver">
+      <UniqueIdentifier>{a293e850-83c4-4d8d-9556-4c67d42abf50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Command line interface">
+      <UniqueIdentifier>{2615f10a-638c-4430-a62e-e2d786d9e4a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\sqs.c">
+    <ClCompile Include="src\main.c">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="src\sqs_main.c">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\sqs\__sqs_unit_test.c">
+      <Filter>Source\Equation solver</Filter>
     </ClCompile>
-    <ClCompile Include="src\__sqs_unit_test.c">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\sqs\sqs.c">
+      <Filter>Source\Equation solver</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cli\cli_parameter_iterator.c">
+      <Filter>Source\Command line interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\sqs.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="src\sqs\__sqs_unit_test.h">
+      <Filter>Source\Equation solver</Filter>
     </ClInclude>
-    <ClInclude Include="src\sqs_common.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="src\sqs\sqs.h">
+      <Filter>Source\Equation solver</Filter>
     </ClInclude>
-    <ClInclude Include="src\sqs_solver.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="src\sqs\sqs_common.h">
+      <Filter>Source\Equation solver</Filter>
     </ClInclude>
-    <ClInclude Include="src\__sqs_unit_test.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="src\sqs\sqs_solver.h">
+      <Filter>Source\Equation solver</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cli\cli.h">
+      <Filter>Source\Command line interface</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
