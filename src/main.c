@@ -19,9 +19,6 @@ main(
   int argc,
   const char **argv
 ) {
-  // little initialization
-  system(" ");
-
   struct {
     SqsBool enableTests;
     SqsBool enableMenu;
@@ -88,7 +85,11 @@ main(
       }
 
       if (!sqsValidateQuadraticEquationCoefficents(&coefs)) {
-        printf("INVALID COEFFICENTS\n");
+        printf(
+          CLI_SET_FOREGROUND_COLOR(255, 0, 0)
+          "INVALID COEFFICENTS\n"
+          CLI_RESET_COLOR()
+        );
         return 0;
       }
 
