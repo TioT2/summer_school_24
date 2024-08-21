@@ -87,9 +87,9 @@ SqsBool SQS_API sqsParseQuadraticEquationCoefficents( FILE *const stream, SqsQua
   assert(dst != NULL);
 
   return
-    fscanf_s(stream, "%f %f %f", &dst->a, &dst->b, &dst->c) == 3 &&
+    fscanf_s(stream, "%f %f %f", &dst->a, &dst->b, &dst->c) == 3
 #ifdef SQS_BUILD_CONFIGURATION_DEBUG
-    sqsValidateQuadraticEquationCoefficents(dst) // idk, should I include validation in parsing function
+    && sqsValidateQuadraticEquationCoefficents(dst) // idk, should I include validation in parsing function
 #endif
   ;
 } // sqsParseQuadraticEquationCoefficents function end

@@ -68,7 +68,6 @@ sqsTestQuadraticRunTest(
   feedback->ok = sqsQuadraticSolutionEqual(&feedback->actualSolution, &feedback->expectedSolution);
 } // sqsTestQuadraticRunTest function end
 
-
 void
 sqsTestQuadraticRunStandardTests(
   const SqsTestQuadraticSolver solver,
@@ -78,7 +77,7 @@ sqsTestQuadraticRunStandardTests(
   assert(solver != NULL);
   assert(testFeedbackCount != NULL);
 
-  struct {
+  static const struct {
     SqsQuadraticEquationCoefficents coefficents;
     SqsQuadraticSolution expectedSolution;
   } tests[] = {
