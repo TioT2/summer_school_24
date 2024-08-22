@@ -44,13 +44,19 @@ appDaemonMain( int argc, const char **argv ) {
 
       switch (requestType) {
       case APP_DAEMON_REQUEST_TYPE_TEST : {
-        AppDaemonRunTestRequest req = {0};
+        AppDaemonTestRequest req = {0};
 
         if (ReadFile(commandPipe, &req, sizeof(req), NULL, NULL)) {
           printf("  TEST %s\n", req.testPath);
         } else {
           printf("  TEST <invalid>\n");
         }
+
+        AppDaemonTestResponseHeader header = {
+          .status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,
+        };
+
+        WriteFile(commandPipe, &header, sizeof(header), NULL, NULL);
 
         break;
       }

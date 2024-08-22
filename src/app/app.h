@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sqs/sqs.h"
+#include "sqs/test/sqs_test.h"
 
 /// @brief common start for all pipes launched by this application name
 #define APP_PIPE_BASE               L"\\\\.\\pipe\\SS_SQS_"
@@ -34,10 +35,54 @@ typedef enum __AppDaemonRequestType {
   APP_DAEMON_REQUEST_TYPE_SHUTDOWN,
 } AppDaemonRequestType;
 
-typedef struct __AppDaemonRunTestRequest {
-  char testPath[APP_PATH_LENGTH]; // path of test to run
-} AppDaemonRunTestRequest;
+/***
+ * Test request/responce handling
+ ***/
 
+/// @brief test file run request representation structure
+typedef struct __AppDaemonTestRequest {
+  char testPath[APP_PATH_LENGTH]; /// path of test to run
+} AppDaemonTestRequest;
+
+/// @brief response status representation structure
+typedef enum __AppDaemonTestResponseStatus {
+  /// ok
+  APP_DAEMON_TEST_RESPONSE_STATUS_OK,
+
+  /// test file doesn't exist
+  APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,
+
+  /// test file parsing error
+  APP_DAEMON_TEST_RESPONSE_STATUS_TEST_PARSING_ERROR,
+} AppDaemonTestResponseStatus;
+
+/// @brief test response header representation structure
+typedef struct __AppDaemonTestResponseHeader {
+  AppDaemonTestResponseStatus status;     /// response status
+  uint32_t                    entryCount; /// count of test entries
+} AppDaemonTestResponseHeader;
+
+/// @brief executor status during test execution representation structure
+typedef enum __AppDaemonTestResponseExecutorStatus {
+  /// executor application normally worked
+  APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED,
+
+  /// executor application crashed during execution
+  APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED,
+} AppDaemonTestResponseExecutorStatus;
+
+/// @brief test run request response element representation structure
+typedef struct __AppDaemonTestResponseEntry {
+  AppDaemonTestResponseExecutorStatus executorStatus; /// executor status
+  SqsTestQuadraticFeedback            feedback;       /// executor feedback
+} AppDaemonTestResponseEntry;
+
+
+/***
+ * Solve request/responce handling
+ ***/
+
+/// @brief solve request representation structure
 typedef struct __AppDaemonSolveRequest {
   SqsQuadraticEquationCoefficents coefficents; // coefficents for daemon to solve equation with
 } AppDaemonSolveRequest;

@@ -84,7 +84,7 @@ appClientMain( int argc, const char **argv ) {
     }
 
     if (strncmp(buffer, testCommand, sizeof(testCommand) - 1) == 0) {
-      AppDaemonRunTestRequest req = {0};
+      AppDaemonTestRequest req = {0};
 
       int parsedCount = sscanf_s(
         buffer + sizeof(testCommand),
@@ -101,6 +101,57 @@ appClientMain( int argc, const char **argv ) {
       AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_TEST;
       WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
       WriteFile(daemonCommandFile, &req, sizeof(req), NULL, NULL);
+
+      AppDaemonTestResponseHeader header = {
+        .status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,
+      };
+
+      if (!ReadFile(daemonCommandFile, &header, sizeof(header), NULL, NULL)) {
+        printf("Error reading server response head\n");
+        continue;
+      }
+
+      printf("--> ");
+      switch (header.status) {
+      case APP_DAEMON_TEST_RESPONSE_STATUS_OK                 : {
+        printf("OK");
+
+        AppDaemonTestResponseEntry entry = {
+          .executorStatus = APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED,
+        };
+
+        for (uint32_t i = 0; i < header.entryCount; i++) {
+          if (!ReadFile(daemonCommandFile, &entry, sizeof(entry), NULL, NULL)) {
+            printf("    ERROR READING DAEMON ENTRY\n");
+            break;
+          }
+
+          switch (entry.executorStatus) {
+          case APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED: {
+            printf("    OK      ");
+            sqsPrintTestQuadraticFeedback(stdout, i + 1, &entry.feedback);
+            break;
+          }
+
+          case APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED: {
+            printf("    CRASHED ");
+            break;
+          }
+          }
+        }
+        break;
+      }
+
+      case APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST  : {
+        printf("TEST FILE DOESN'T EXIST\n");
+        break;
+      }
+
+      case APP_DAEMON_TEST_RESPONSE_STATUS_TEST_PARSING_ERROR : {
+        printf("TEST PARSING ERROR\n");
+        break;
+      }
+      }
 
       continue;
     }
