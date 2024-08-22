@@ -39,6 +39,8 @@ main(
   int argc,
   const char **argv
 ) {
+  system(" ");
+
   AppExecutionMode executionMode = APP_EXECUTION_MODE_UNDEFINED;
 
   // define execution modes

@@ -59,8 +59,111 @@ appDaemonMain( int argc, const char **argv ) {
           .status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,
         };
 
-        header.status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST;
+        FILE *f = NULL;
+
+        fopen_s(&f, req.testPath, "r");
+
+        if (f == NULL) {
+          header.status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST;
+          WriteFile(clientPipe, &header, sizeof(header), NULL, NULL);
+          break;
+        }
+
+        fseek(f, 0, SEEK_END);
+        size_t fileSize = ftell(f);
+        rewind(f);
+
+        char *text = (char *)malloc(fileSize);
+
+        if (text == NULL) {
+          header.status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_PARSING_ERROR;
+          WriteFile(clientPipe, &header, sizeof(header), NULL, NULL);
+          fclose(f);
+          break;
+        }
+
+        fread(text, 1, fileSize, f);
+        fclose(f);
+
+        SqsQuadraticTestSet testSet = {
+          .testCount = 0,
+        };
+
+        if (!sqsParseQuadraticTestSet(text, &testSet)) {
+          header.status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_PARSING_ERROR;
+          WriteFile(clientPipe, &header, sizeof(header), NULL, NULL);
+          break;
+        }
+        free(text);
+
+        // initialize executor
+        AppExecutor executor = {0};
+
+        if (!appOpenExecutor(&executor)) {
+          header.status = APP_DAEMON_TEST_RESPONSE_STATUS_EXECUTOR_CRASHED;
+          WriteFile(clientPipe, &header, sizeof(header), NULL, NULL);
+          break;
+        }
+
+        header.status = APP_DAEMON_TEST_RESPONSE_STATUS_OK;
+        header.entryCount = (size_t)testSet.testCount;
         WriteFile(clientPipe, &header, sizeof(header), NULL, NULL);
+
+        uint32_t ti;
+        BOOL executorOpen = TRUE;
+
+        AppDaemonTestResponseEntry entry = {
+          .executorStatus = APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED,
+        };
+
+        for (ti = 0; ti < testSet.testCount; ti++) {
+          const SqsQuadraticTest *test = testSet.tests + ti;
+
+          AppExecutorTaskType taskType = APP_EXECUTOR_TASK_TYPE_TEST;
+
+          WriteFile(executor.hStdin, &taskType, sizeof(taskType), NULL, NULL);
+          WriteFile(executor.hStdin, test, sizeof(SqsQuadraticTest), NULL, NULL);
+
+          AppExecutorTaskStatus taskStatus = (AppExecutorTaskStatus)-1;
+
+          BOOL crashed = FALSE;
+
+          if (!ReadFile(executor.hStdout, &taskStatus, sizeof(taskStatus), NULL, NULL)) {
+            crashed = TRUE;
+          } else {
+            crashed = (taskStatus == APP_EXECUTOR_TASK_STATUS_CRASHED);
+          }
+
+          if (!crashed) {
+            if (!ReadFile(executor.hStdout, &entry.feedback, sizeof(entry.feedback), NULL, NULL)) {
+              crashed = TRUE;
+            }
+          }
+
+          if (crashed) {
+            entry.executorStatus = APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED;
+
+            appCloseExecutor(&executor);
+            if (!appOpenExecutor(&executor)) {
+              executorOpen = FALSE;
+              break;
+            }
+          } else {
+            entry.executorStatus = APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED;
+          }
+
+          WriteFile(clientPipe, &entry, sizeof(entry), NULL, NULL);
+        }
+
+        entry.executorStatus = APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED;
+        while (ti < testSet.testCount)
+          WriteFile(clientPipe, &entry, sizeof(entry), NULL, NULL);
+
+        if (executorOpen) {
+          const AppExecutorTaskType taskType = APP_EXECUTOR_TASK_TYPE_QUIT;
+          WriteFile(executor.hStdin, &taskType, sizeof(taskType), NULL, NULL);
+          appCloseExecutor(&executor);
+        }
 
         break;
       }

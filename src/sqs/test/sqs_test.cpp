@@ -37,8 +37,6 @@ sqsPrintTestQuadraticFeedback(
     fprintf(file, "/");
     sqsPrintQuadraticSolution(file, &feedback->expectedSolution);
   }
-
-  fprintf(file, "\n");
 } // sqsPrintTestQuadraticFeedback function end
 
 void

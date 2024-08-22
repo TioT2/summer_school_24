@@ -114,7 +114,7 @@ appClientMain( int argc, const char **argv ) {
       printf("--> ");
       switch (header.status) {
       case APP_DAEMON_TEST_RESPONSE_STATUS_OK                 : {
-        printf("OK");
+        printf("OK\n");
 
         AppDaemonTestResponseEntry entry = {
           .executorStatus = APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED,
@@ -130,11 +130,12 @@ appClientMain( int argc, const char **argv ) {
           case APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED: {
             printf("    OK      ");
             sqsPrintTestQuadraticFeedback(stdout, i + 1, &entry.feedback);
+            printf("\n");
             break;
           }
 
           case APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED: {
-            printf("    CRASHED ");
+            printf("    CRASHED\n");
             break;
           }
           }

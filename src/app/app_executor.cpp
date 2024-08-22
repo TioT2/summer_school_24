@@ -1,12 +1,15 @@
 #include "app.h"
 
 #include <signal.h>
+#include <stdlib.h>
 
 /// @brief STDOUT global constant
 static HANDLE appExecutorStdout = NULL;
 
 // @brief STDIN global constant
 static HANDLE appExecutorStdin = NULL;
+
+static BOOL appExecutorOk = FALSE;
 
 //----------------------------------------------------------------
 //! @brief signal handling function
@@ -52,7 +55,9 @@ appExecutorMain( int argc, const char **argv ) {
           .status = SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS,
         };
 
-        assert(ReadFile(appExecutorStdin, &coefficents, sizeof(coefficents), NULL, NULL));
+        if (!ReadFile(appExecutorStdin, &coefficents, sizeof(coefficents), NULL, NULL)) {
+          abort();
+        }
         sqsSolveQuadratic(&coefficents, &solution);
 
         WriteFile(appExecutorStdout, &okStatus, sizeof(okStatus), NULL, NULL);
@@ -61,9 +66,19 @@ appExecutorMain( int argc, const char **argv ) {
         break;
       }
 
-      case APP_EXECUTOR_TASK_TYPE_TEST  :
-        assert(FALSE);
+      case APP_EXECUTOR_TASK_TYPE_TEST  : {
+        SqsQuadraticTest test;
+        SqsTestQuadraticFeedback feedback;
+
+        if (!ReadFile(appExecutorStdin, &test, sizeof(test), NULL, NULL)) {
+          abort();
+        }
+
+        sqsTestQuadraticRunTest(&feedback, sqsSolveQuadratic, &test);
+        WriteFile(appExecutorStdout, &okStatus, sizeof(okStatus), NULL, NULL);
+        WriteFile(appExecutorStdout, &feedback, sizeof(feedback), NULL, NULL);
         break;
+      }
 
       case APP_EXECUTOR_TASK_TYPE_QUIT  :
         continueExecution = FALSE;
@@ -71,6 +86,7 @@ appExecutorMain( int argc, const char **argv ) {
     }
   }
 
+  appExecutorOk = TRUE;
   return 0;
 } // appExecutorMain function end
 
