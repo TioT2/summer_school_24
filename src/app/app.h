@@ -11,6 +11,7 @@
 
 #include "sqs/sqs.h"
 #include "sqs/test/sqs_test.h"
+#include "executor_interface/app_executor_interface.h"
 
 /// @brief common start for all pipes launched by this application name
 #define APP_PIPE_BASE               L"\\\\.\\pipe\\SS_SQS_"
@@ -48,6 +49,9 @@ typedef struct __AppDaemonTestRequest {
 typedef enum __AppDaemonTestResponseStatus {
   /// ok
   APP_DAEMON_TEST_RESPONSE_STATUS_OK,
+
+  /// executor crashed before test execution
+  APP_DAEMON_TEST_RESPONSE_STATUS_EXECUTOR_CRASHED,
 
   /// test file doesn't exist
   APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,

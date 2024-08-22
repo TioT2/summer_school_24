@@ -1,104 +1,5 @@
 #include "app.h"
-
-/// @brief executor representation structure
-typedef struct __AppExecutor {
-  HANDLE _hStdinRead;   // STDIN  pipe read
-  HANDLE _hStdinWrite;  // STDIN  pipe write
-  HANDLE _hStdoutRead;  // STDOUT pipe read
-  HANDLE _hStdoutWrite; // STDOUT pipe write
-  wchar_t *_cmdLine;    // command line
-
-  HANDLE hStdin;        // STDIN  handle for user
-  HANDLE hStdout;       // STDOUT handle for user
-} AppExecutor;
-
-
-static wchar_t *
-appConnectArguments( int argc, const char **argv ) {
-  size_t cmdLineLen = 1;
-
-  for (int i = 0; i < argc; i++) {
-    cmdLineLen += strlen(argv[i]);
-    cmdLineLen++;
-  }
-
-  wchar_t *cmdLine = (wchar_t *)malloc(sizeof(wchar_t) * cmdLineLen);
-
-  if (cmdLine == NULL)
-    return NULL;
-
-  wchar_t *cmdLineIter = cmdLine;
-
-  for (int argI = 0; argI < argc; argI++) {
-    const char *const arg = argv[argI];
-    const size_t len = strlen(arg);
-
-    for (size_t charI = 0; charI < len; charI++)
-      *cmdLineIter++ = (wchar_t)arg[charI];
-    *cmdLineIter++ = L' ';
-  }
-
-  return cmdLine;
-}
-
-static BOOL
-appOpenExecutor( int argc, const char **argv, AppExecutor *const executor ) {
-  assert(executor != NULL);
-
-  if ((executor->_cmdLine = appConnectArguments(argc, argv)) == NULL)
-    return FALSE;
-
-  if (!CreatePipe(&executor->_hStdinRead,  &executor->_hStdinWrite,  NULL, 0))
-    return FALSE;
-
-  if (!CreatePipe(&executor->_hStdoutRead, &executor->_hStdoutWrite, NULL, 0))
-    return FALSE;
-
-  executor->hStdin = executor->_hStdinWrite;
-  executor->hStdout = executor->_hStdoutRead;
-
-  STARTUPINFO startupInfo = {
-    .cb = sizeof(startupInfo),
-    .dwFlags = STARTF_USESTDHANDLES,
-
-    .hStdInput = executor->_hStdinRead,
-    .hStdOutput = executor->_hStdoutWrite,
-    .hStdError = executor->_hStdoutWrite,
-  };
-
-  PROCESS_INFORMATION processInfo = {0};
-  SECURITY_ATTRIBUTES processSecurityAttribs = {0};
-  SECURITY_ATTRIBUTES threadSecurityAttribs = {0};
-
-  return CreateProcess(
-    L"ss_sqs.exe",
-    executor->_cmdLine,
-    &processSecurityAttribs,
-    &threadSecurityAttribs,
-    TRUE,
-    0,
-    NULL,
-    NULL,
-    &startupInfo,
-    &processInfo
-  );
-} // appOpenExecutor function end
-
-static void
-appCloseExecutor( AppExecutor *const executor ) {
-  assert(executor != NULL);
-
-  // deinitialize stdin
-  CloseHandle(executor->_hStdinRead);
-  CloseHandle(executor->_hStdinWrite);
-
-  // deinitialize stdout
-  CloseHandle(executor->_hStdoutRead);
-  CloseHandle(executor->_hStdoutWrite);
-
-  // free command line arguments
-  free(executor->_cmdLine);
-} // appCloseExecutor function end
+#include "executor_interface/app_executor_interface.h"
 
 int
 appDaemonMain( int argc, const char **argv ) {
@@ -157,6 +58,7 @@ appDaemonMain( int argc, const char **argv ) {
           .status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,
         };
 
+        header.status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST;
         WriteFile(clientPipe, &header, sizeof(header), NULL, NULL);
 
         break;
@@ -180,7 +82,40 @@ appDaemonMain( int argc, const char **argv ) {
           .status = APP_DAEMON_SOLVE_RESPONSE_STATUS_ERROR,
         };
 
-        // Send response
+        AppExecutor executor = {0};
+
+        // try open executor
+        if (appOpenExecutor(&executor)) {
+          AppExecutorTaskType taskType;
+
+          taskType = APP_EXECUTOR_TASK_TYPE_SOLVE;
+          WriteFile(executor.hStdin, &taskType, sizeof(taskType), NULL, NULL);
+
+          AppExecutorTaskStatus taskStatus;
+          ReadFile(executor.hStdout, &taskStatus, sizeof(taskStatus), NULL, NULL);
+
+          if (taskStatus != APP_EXECUTOR_TASK_STATUS_CRASHED) {
+            // read solution
+            res.status = APP_DAEMON_SOLVE_RESPONSE_STATUS_OK;
+            ReadFile(executor.hStdout, &res.solution, sizeof(res.solution), NULL, NULL);
+
+            // send quit task
+            taskType = APP_EXECUTOR_TASK_TYPE_QUIT;
+            WriteFile(executor.hStdin, &taskType, sizeof(taskType), NULL, NULL);
+          } else {
+
+            // read crash report
+            AppExecutorCrashReport crashReport = {0};
+            ReadFile(executor.hStdout, &crashReport, sizeof(crashReport), NULL, NULL);
+            printf("  EXECUTOR CRASHED WITH %d SIGNAL\n", crashReport.signal);
+          }
+
+          appCloseExecutor(&executor);
+        }
+
+        res.status = APP_DAEMON_SOLVE_RESPONSE_STATUS_ERROR;
+
+        // send response to client
         WriteFile(clientPipe, &res, sizeof(res), NULL, NULL);
 
         break;
@@ -208,5 +143,33 @@ appDaemonMain( int argc, const char **argv ) {
 
   return 0;
 } // appDaemonMain function end
+
+// static wchar_t *
+// appConnectArguments( int argc, const char **argv ) {
+//   size_t cmdLineLen = 1;
+// 
+//   for (int i = 0; i < argc; i++) {
+//     cmdLineLen += strlen(argv[i]);
+//     cmdLineLen++;
+//   }
+// 
+//   wchar_t *cmdLine = (wchar_t *)malloc(sizeof(wchar_t) * cmdLineLen);
+// 
+//   if (cmdLine == NULL)
+//     return NULL;
+// 
+//   wchar_t *cmdLineIter = cmdLine;
+// 
+//   for (int argI = 0; argI < argc; argI++) {
+//     const char *const arg = argv[argI];
+//     const size_t len = strlen(arg);
+// 
+//     for (size_t charI = 0; charI < len; charI++)
+//       *cmdLineIter++ = (wchar_t)arg[charI];
+//     *cmdLineIter++ = L' ';
+//   }
+// 
+//   return cmdLine;
+// }
 
 // app_daemon.cpp file end

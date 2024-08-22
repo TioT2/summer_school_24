@@ -2,26 +2,18 @@
 
 #include <signal.h>
 
-static void
-appClose( void ) {
-
-} // appClose function end
+HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
 static void
 appSignalHandler( int signal ) {
-  const char *signalName;
+  AppExecutorTaskStatus taskStatus = APP_EXECUTOR_TASK_STATUS_CRASHED;
+  AppExecutorCrashReport crashReport = {
+    .signal = signal,
+  };
 
-  switch (signal) {
-  case SIGINT  : signalName = "SIGINT"   ; break;
-  case SIGILL  : signalName = "SIGILL"   ; break;
-  case SIGFPE  : signalName = "SIGFPE"   ; break;
-  case SIGSEGV : signalName = "SIGSEGV"  ; break;
-  case SIGTERM : signalName = "SIGTERM"  ; break;
-  case SIGBREAK: signalName = "SIGBREAK" ; break;
-  case SIGABRT : signalName = "SIGABRT"  ; break;
-  }
-
-  appClose();
+  WriteFile(hStdout, &taskStatus, sizeof(taskStatus), NULL, NULL);
+  WriteFile(hStdout, &crashReport, sizeof(crashReport), NULL, NULL);
 } // appSignalHandler function end
 
 
@@ -38,8 +30,7 @@ appExecutorMain( int argc, const char **argv ) {
   signal(SIGBREAK, appSignalHandler);
   signal(SIGABRT , appSignalHandler);
 
-  // End
-  appClose();
+  *(int8_t *)NULL = 42;
 
   return 0;
 } // appExecutorMain function end

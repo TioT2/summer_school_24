@@ -23,6 +23,7 @@
     <ClCompile Include="src\app\app_client.cpp" />
     <ClCompile Include="src\app\app_daemon.cpp" />
     <ClCompile Include="src\app\app_executor.cpp" />
+    <ClCompile Include="src\app\executor_interface\app_executor_interface.cpp" />
     <ClCompile Include="src\cli\cli.cpp" />
     <ClCompile Include="src\cli\cli_parameter_iterator.cpp" />
     <ClCompile Include="src\sqs\sqs.cpp" />
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\app.h" />
+    <ClInclude Include="src\app\executor_interface\app_executor_interface.h" />
     <ClInclude Include="src\cli\cli.h" />
     <ClInclude Include="src\sqs\sqs.h" />
     <ClInclude Include="src\sqs\sqs_common.h" />

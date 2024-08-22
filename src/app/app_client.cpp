@@ -151,6 +151,11 @@ appClientMain( int argc, const char **argv ) {
         printf("TEST PARSING ERROR\n");
         break;
       }
+
+      case APP_DAEMON_TEST_RESPONSE_STATUS_EXECUTOR_CRASHED: {
+        printf("EXECUTOR CRASHED\n");
+        break;
+      }
       }
 
       continue;

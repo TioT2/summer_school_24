@@ -65,7 +65,7 @@ main(
   }
 
   if (executionMode == APP_EXECUTION_MODE_UNDEFINED)
-    executionMode = APP_EXECUTION_MODE_CLIENT;
+    executionMode = APP_EXECUTION_MODE_DAEMON;
 
   // custom argc/argv
   int          argCount = 1;

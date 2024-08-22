@@ -16,6 +16,9 @@
     <Filter Include="Source\Application">
       <UniqueIdentifier>{3ac92e4c-d387-4d31-8b65-62fb6988cf6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Application\Executor interface">
+      <UniqueIdentifier>{c53375c7-e3da-4f53-b781-a777e401c2be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -48,6 +51,9 @@
     <ClCompile Include="src\app\app.cpp">
       <Filter>Source\Application</Filter>
     </ClCompile>
+    <ClCompile Include="src\app\executor_interface\app_executor_interface.cpp">
+      <Filter>Source\Application\Executor interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\sqs\sqs.h">
@@ -67,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="src\app\app.h">
       <Filter>Source\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\executor_interface\app_executor_interface.h">
+      <Filter>Source\Application\Executor interface</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
