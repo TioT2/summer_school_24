@@ -87,11 +87,16 @@ appDaemonMain( int argc, const char **argv ) {
         // try open executor
         if (appOpenExecutor(&executor)) {
           AppExecutorTaskType taskType;
+          
+          assert(executor.hStdin != NULL);
+          assert(executor.hStdout != NULL);
 
           taskType = APP_EXECUTOR_TASK_TYPE_SOLVE;
           WriteFile(executor.hStdin, &taskType, sizeof(taskType), NULL, NULL);
+          
+          WriteFile(executor.hStdin, &req.coefficents, sizeof(req.coefficents), NULL, NULL);
 
-          AppExecutorTaskStatus taskStatus;
+          AppExecutorTaskStatus taskStatus = (AppExecutorTaskStatus)-1;
           ReadFile(executor.hStdout, &taskStatus, sizeof(taskStatus), NULL, NULL);
 
           if (taskStatus != APP_EXECUTOR_TASK_STATUS_CRASHED) {
@@ -103,6 +108,7 @@ appDaemonMain( int argc, const char **argv ) {
             taskType = APP_EXECUTOR_TASK_TYPE_QUIT;
             WriteFile(executor.hStdin, &taskType, sizeof(taskType), NULL, NULL);
           } else {
+            res.status = APP_DAEMON_SOLVE_RESPONSE_STATUS_ERROR;
 
             // read crash report
             AppExecutorCrashReport crashReport = {0};
@@ -110,10 +116,9 @@ appDaemonMain( int argc, const char **argv ) {
             printf("  EXECUTOR CRASHED WITH %d SIGNAL\n", crashReport.signal);
           }
 
-          appCloseExecutor(&executor);
         }
 
-        res.status = APP_DAEMON_SOLVE_RESPONSE_STATUS_ERROR;
+        appCloseExecutor(&executor);
 
         // send response to client
         WriteFile(clientPipe, &res, sizeof(res), NULL, NULL);

@@ -1,7 +1,8 @@
-#ifndef APP_DAEMON_EXECUTOR_H_
-#define APP_DAEMON_EXECUTOR_H_
+#ifndef APP_EXECUTOR_INTERFACE_H_
+#define APP_EXECUTOR_INTERFACE_H_
 
 #include <windows.h>
+#include <stdio.h>
 
 /// @brief executor representation structure
 typedef struct __AppExecutor {
@@ -9,6 +10,9 @@ typedef struct __AppExecutor {
   HANDLE _hStdinWrite;  // STDIN  pipe write
   HANDLE _hStdoutRead;  // STDOUT pipe read
   HANDLE _hStdoutWrite; // STDOUT pipe write
+
+  HANDLE _hProcess;     // process handle
+  HANDLE _hThread;      // thread handle
 
   HANDLE hStdin;        // STDIN  handle for user
   HANDLE hStdout;       // STDOUT handle for user
@@ -52,6 +56,22 @@ appOpenExecutor( AppExecutor *const executor );
 void
 appCloseExecutor( AppExecutor *const executor );
 
-#endif // !defined(APP_DAEMON_EXECUTOR_H_)
 
-// app_daemon_executor.h file end#pragma once
+/***
+ * Utility functions
+ ***/
+
+//----------------------------------------------------------------
+//! @brief WINAPI error display function
+//!
+//! @param [in] file  file to print winapi error to
+//! @param [in] error WINAPI error code
+//! 
+//! @return cuont of characters displayed
+//----------------------------------------------------------------
+int
+appPrintWinapiError( FILE *const file, DWORD error );
+
+#endif // !defined(APP_EXECUTOR_INTERFACE_H_)
+
+// app_executor_interface.h file end#pragma once

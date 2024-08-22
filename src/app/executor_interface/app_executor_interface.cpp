@@ -8,10 +8,16 @@ appOpenExecutor( AppExecutor *const executor ) {
 
   memset(executor, 0, sizeof(AppExecutor));
 
-  if (!CreatePipe(&executor->_hStdinRead,  &executor->_hStdinWrite,  NULL, 0))
+  SECURITY_ATTRIBUTES seqAttribs = {
+    .nLength = sizeof(seqAttribs),
+    .lpSecurityDescriptor = NULL,
+    .bInheritHandle = TRUE,
+  };
+
+  if (!CreatePipe(&executor->_hStdinRead,  &executor->_hStdinWrite,  &seqAttribs, 512))
     return FALSE;
 
-  if (!CreatePipe(&executor->_hStdoutRead, &executor->_hStdoutWrite, NULL, 0)) {
+  if (!CreatePipe(&executor->_hStdoutRead, &executor->_hStdoutWrite, &seqAttribs, 512)) {
     CloseHandle(executor->_hStdinRead);
     CloseHandle(executor->_hStdinWrite);
     return FALSE;
@@ -33,13 +39,17 @@ appOpenExecutor( AppExecutor *const executor ) {
   SECURITY_ATTRIBUTES processSecurityAttribs = {0};
   SECURITY_ATTRIBUTES threadSecurityAttribs = {0};
 
-  TCHAR args[] = L"args";
+  TCHAR processName[512];
+
+  GetModuleFileName(NULL, processName, sizeof(processName) / sizeof(TCHAR));
+
+  TCHAR commandLine[] = L" -e";
 
   BOOL ok = CreateProcess(
-    L"ss_sqs.exe",
-    args,
-    &processSecurityAttribs,
-    &threadSecurityAttribs,
+    processName,
+    commandLine,
+    NULL,
+    NULL,
     TRUE,
     0,
     NULL,
@@ -47,6 +57,9 @@ appOpenExecutor( AppExecutor *const executor ) {
     &startupInfo,
     &processInfo
   );
+
+  executor->_hProcess = processInfo.hProcess;
+  executor->_hThread = processInfo.hThread;
 
   if (!ok) {
     // deinitialize stdin
@@ -57,6 +70,7 @@ appOpenExecutor( AppExecutor *const executor ) {
     CloseHandle(executor->_hStdoutRead);
     CloseHandle(executor->_hStdoutWrite);
   }
+
   return ok;
 } // appOpenExecutor function end
 
@@ -64,13 +78,23 @@ void
 appCloseExecutor( AppExecutor *const executor ) {
   assert(executor != NULL);
 
+  // deinitialize process
+  if (executor->_hProcess != NULL) {
+    CloseHandle(executor->_hProcess);
+    CloseHandle(executor->_hThread);
+  }
+
   // deinitialize stdin
-  CloseHandle(executor->_hStdinRead);
-  CloseHandle(executor->_hStdinWrite);
+  if (executor->_hStdinRead != NULL) {
+    CloseHandle(executor->_hStdinRead);
+    CloseHandle(executor->_hStdinWrite);
+  }
 
   // deinitialize stdout
-  CloseHandle(executor->_hStdoutRead);
-  CloseHandle(executor->_hStdoutWrite);
+  if (executor->_hStdoutRead != NULL) {
+    CloseHandle(executor->_hStdoutRead);
+    CloseHandle(executor->_hStdoutWrite);
+  }
 } // appCloseExecutor function end
 
 // app_daemon_executor.cpp file end

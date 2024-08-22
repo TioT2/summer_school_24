@@ -144,21 +144,4 @@ appDaemonMain( int argc, const char **argv );
 int
 appExecutorMain( int argc, const char **argv );
 
-
-
-/***
- * Utility functions
- ***/
-
-//----------------------------------------------------------------
-//! @brief WINAPI error display function
-//!
-//! @param [in] file  file to print winapi error to
-//! @param [in] error WINAPI error code
-//! 
-//! @return cuont of characters displayed
-//----------------------------------------------------------------
-int
-appPrintWinapiError( FILE *const file, DWORD error );
-
 #endif
