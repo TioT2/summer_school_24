@@ -9,8 +9,6 @@ static HANDLE appExecutorStdout = NULL;
 // @brief STDIN global constant
 static HANDLE appExecutorStdin = NULL;
 
-static BOOL appExecutorOk = FALSE;
-
 //----------------------------------------------------------------
 //! @brief signal handling function
 //!
@@ -30,7 +28,7 @@ appSignalHandler( int signal ) {
 } // appSignalHandler function end
 
 int
-appExecutorMain( int argc, const char **argv ) {
+appExecutorMain( int, const char ** ) {
   appExecutorStdout = GetStdHandle(STD_OUTPUT_HANDLE);
   appExecutorStdin = GetStdHandle(STD_INPUT_HANDLE);
 
@@ -74,6 +72,11 @@ appExecutorMain( int argc, const char **argv ) {
           abort();
         }
 
+        // if (test.expectedSolution.status == SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS) {
+        //   // raise SIGSEGV
+        //   *(uint8_t *)NULL = 42;
+        // }
+
         sqsTestQuadraticRunTest(&feedback, sqsSolveQuadratic, &test);
         WriteFile(appExecutorStdout, &okStatus, sizeof(okStatus), NULL, NULL);
         WriteFile(appExecutorStdout, &feedback, sizeof(feedback), NULL, NULL);
@@ -85,8 +88,6 @@ appExecutorMain( int argc, const char **argv ) {
         break;
     }
   }
-
-  appExecutorOk = TRUE;
   return 0;
 } // appExecutorMain function end
 

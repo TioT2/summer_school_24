@@ -24,7 +24,7 @@ typedef struct __SqsQuadraticTest {
 /// @brief set of test representation structure
 typedef struct __SqsQuadraticTestSet {
   SqsQuadraticTest * tests;     // test array
-  size_t             testCount; // test array size
+  uint32_t           testCount; // test array size
 } SqsQuadraticTestSet;
 
 //----------------------------------------------------------------
@@ -75,25 +75,6 @@ sqsTestQuadraticRunTest(
   SqsTestQuadraticFeedback *const feedback,
   const SqsTestQuadraticSolver solver,
   const SqsQuadraticTest *const test
-);
-
-//----------------------------------------------------------------
-//! @brief standard test set performing function
-//!
-//! @param [in]  solver        tested solver
-//! @param [in]  set           test set to perform
-//! @param [out] testFeedbacks tests feedback array
-//! 
-//! @note testFeedbacks array may be null during first function call, \
-//!       in this case only testFeedbacksSize value will be filled,   \
-//!       testFeedbacksSize will be filled with same value during     \
-//!       every function invocation
-//----------------------------------------------------------------
-void
-sqsTestQuadraticRunSet(
-  const SqsTestQuadraticSolver solver,
-  const SqsQuadraticTestSet *const set,
-  SqsTestQuadraticFeedback *testFeedbacks
 );
 
 #endif // !defined(__SQS_UNIT_TEST_H_)

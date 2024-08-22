@@ -55,47 +55,4 @@ sqsTestQuadraticRunTest(
   feedback->ok = sqsQuadraticSolutionEqual(&feedback->actualSolution, &feedback->expectedSolution);
 } // sqsTestQuadraticRunTest function end
 
-
-void
-sqsTestQuadraticRunSet(
-  const SqsTestQuadraticSolver solver,
-  const SqsQuadraticTestSet *const set,
-  SqsTestQuadraticFeedback *testFeedbacks
-) {
-  assert(solver != NULL);
-  assert(set != NULL);
-  assert(testFeedbacks != NULL);
-
-  for (int i = 0; i < set->testCount; i++)
-    sqsTestQuadraticRunTest(testFeedbacks + i, solver, set->tests + i);
-}
-
-void
-sqsTestQuadraticRunStandardTests(
-  const SqsTestQuadraticSolver solver,
-  size_t *testFeedbackCount,
-  SqsTestQuadraticFeedback *testFeedbacks
-) {
-  assert(solver != NULL);
-  assert(testFeedbackCount != NULL);
-
-  static const SqsQuadraticTest tests[] = {
-    { { +0.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_INF_ROOTS, +0.0000000000000000f, +0.0000000000000000f, } },
-    { { +1.0f, +0.0f, +0.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT,   +0.0000000000000000f, +0.0000000000000000f, } },
-    { { +1.0f, +0.0f, +1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_NO_ROOTS,   +0.0000000000000000f, +0.0000000000000000f, } },
-    { { +0.0f, +2.0f, +1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_ONE_ROOT,   -0.5000000000000000f, +0.0000000000000000f, } },
-    { { +1.0f, -2.0f, -1.0f, }, { SQS_QUADRATIC_SOLVE_STATUS_TWO_ROOTS,  -0.4142135623730951f, +2.4142135623730951f, } },
-  };
- 
-  static const size_t TEST_COUNT = sizeof(tests) / sizeof(tests[0]);
-
-  *testFeedbackCount = TEST_COUNT;
-  
-  if (testFeedbacks == NULL)
-    return;
-
-  for (int i = 0; i < TEST_COUNT; i++)
-    sqsTestQuadraticRunTest(testFeedbacks + i, solver, tests + i);
-} // sqsTestQuadraticRunStandardTests function end
-
 // __sqs_unit_test.c file end

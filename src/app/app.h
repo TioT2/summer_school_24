@@ -25,15 +25,16 @@
 /// @brief path legnth
 #define APP_PATH_LENGTH 256
 
+/// @brief user->daemon request type
 typedef enum __AppDaemonRequestType {
-  /// run test file, sends path relative to server
+  /// run test file, send server-relative path
   APP_DAEMON_REQUEST_TYPE_TEST,
 
   /// solve single equation
   APP_DAEMON_REQUEST_TYPE_SOLVE,
 
-  /// shutdown request
-  APP_DAEMON_REQUEST_TYPE_SHUTDOWN,
+  /// tell to daemon, that client is ending connection
+  APP_DAEMON_REQUEST_TYPE_QUIT,
 } AppDaemonRequestType;
 
 /***

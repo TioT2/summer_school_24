@@ -26,7 +26,9 @@ cliRunTests( void ) {
   };
 
   // test set
-  sqsTestQuadraticRunSet(sqsSolveQuadratic, &testSet, feedback);
+
+  for (uint32_t i = 0; i < testSet.testCount; i++)
+    sqsTestQuadraticRunTest(feedback + i, sqsSolveQuadratic, testSet.tests + i);
 
   SqsBool result = SQS_TRUE;
   for (uint32_t i = 0; i < testCount; i++) {

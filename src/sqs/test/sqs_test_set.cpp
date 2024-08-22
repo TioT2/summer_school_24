@@ -127,7 +127,7 @@ sqsParseQuadraticTestSet(
     }
   }
 
-  set->testCount = size;
+  set->testCount = (uint32_t)size;
 
   return SQS_TRUE;
 } // sqsParseQuadraticTestSet function end

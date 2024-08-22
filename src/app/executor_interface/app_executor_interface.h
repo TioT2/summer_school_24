@@ -14,10 +14,11 @@ typedef struct __AppExecutor {
   HANDLE _hProcess;     // process handle
   HANDLE _hThread;      // thread handle
 
-  HANDLE hStdin;        // STDIN  handle for user
-  HANDLE hStdout;       // STDOUT handle for user
+  HANDLE hStdin;        // public STDIN  handle
+  HANDLE hStdout;       // public STDOUT handle
 } AppExecutor;
 
+/// @brief executor task type
 typedef enum __AppExecutorTaskType {
   /// solve quadratic and write answer
   APP_EXECUTOR_TASK_TYPE_SOLVE,
@@ -29,11 +30,13 @@ typedef enum __AppExecutorTaskType {
   APP_EXECUTOR_TASK_TYPE_QUIT,
 } AppExecutorTaskType;
 
+/// @brief executor task
 typedef enum __AppExecutorTaskStatus {
   APP_EXECUTOR_TASK_STATUS_OK,      // ok
   APP_EXECUTOR_TASK_STATUS_CRASHED, // crashed
 } AppExecutorTaskStatus;
 
+// @brief executor crash report representation structure
 typedef struct __AppExecutorCrashReport {
   int signal; /// signal application crashed with
 } AppExecutorCrashReport;
