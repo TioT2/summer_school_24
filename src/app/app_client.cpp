@@ -2,7 +2,7 @@
 
 int
 appClientMain( int argc, const char **argv ) {
-  HANDLE daemonCommandFile = CreateFile(
+  HANDLE daemonPipe = CreateFile(
     APP_DAEMON_CLIENT_PIPE,
     GENERIC_READ | GENERIC_WRITE,
     FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -12,7 +12,7 @@ appClientMain( int argc, const char **argv ) {
     NULL
   );
 
-  if (daemonCommandFile == INVALID_HANDLE_VALUE) {
+  if (daemonPipe == INVALID_HANDLE_VALUE) {
     printf(
       "FATAL ERORR:"
       "Can't open daemon handle\n"
@@ -56,12 +56,12 @@ appClientMain( int argc, const char **argv ) {
       }
 
       AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_SOLVE;
-      WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
-      WriteFile(daemonCommandFile, &req, sizeof(req), NULL, NULL);
+      WriteFile(daemonPipe, &requestType, sizeof(requestType), NULL, NULL);
+      WriteFile(daemonPipe, &req, sizeof(req), NULL, NULL);
 
       AppDaemonSolveResponse res = {};
 
-      if (!ReadFile(daemonCommandFile, &res, sizeof(res), NULL, NULL)) {
+      if (!ReadFile(daemonPipe, &res, sizeof(res), NULL, NULL)) {
         continue;
       }
 
@@ -99,14 +99,14 @@ appClientMain( int argc, const char **argv ) {
       }
 
       AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_TEST;
-      WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
-      WriteFile(daemonCommandFile, &req, sizeof(req), NULL, NULL);
+      WriteFile(daemonPipe, &requestType, sizeof(requestType), NULL, NULL);
+      WriteFile(daemonPipe, &req, sizeof(req), NULL, NULL);
 
       AppDaemonTestResponseHeader header = {
         .status = APP_DAEMON_TEST_RESPONSE_STATUS_TEST_DOESNT_EXIST,
       };
 
-      if (!ReadFile(daemonCommandFile, &header, sizeof(header), NULL, NULL)) {
+      if (!ReadFile(daemonPipe, &header, sizeof(header), NULL, NULL)) {
         printf("Error reading server response head\n");
         continue;
       }
@@ -121,7 +121,7 @@ appClientMain( int argc, const char **argv ) {
         };
 
         for (uint32_t i = 0; i < header.entryCount; i++) {
-          if (!ReadFile(daemonCommandFile, &entry, sizeof(entry), NULL, NULL)) {
+          if (!ReadFile(daemonPipe, &entry, sizeof(entry), NULL, NULL)) {
             printf("    ERROR READING DAEMON ENTRY\n");
             break;
           }
@@ -158,12 +158,12 @@ appClientMain( int argc, const char **argv ) {
 
     if (strncmp(buffer, shutdownCommand, sizeof(shutdownCommand) - 1) == 0) {
       AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_SHUTDOWN;
-      WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
+      WriteFile(daemonPipe, &requestType, sizeof(requestType), NULL, NULL);
       break;
     }
   }
 
-  CloseHandle(daemonCommandFile);
+  CloseHandle(daemonPipe);
 
   return 0;
 } // appClientMain function end
