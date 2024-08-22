@@ -5,7 +5,7 @@ appDaemonMain( int argc, const char **argv ) {
   printf("DAEMON STARTED\n");
 
   HANDLE commandPipe = CreateNamedPipe(
-    APP_DAEMON_COMMAND_PIPE,
+    APP_DAEMON_CLIENT_PIPE,
     PIPE_ACCESS_INBOUND,
     PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
     PIPE_UNLIMITED_INSTANCES,
@@ -23,29 +23,66 @@ appDaemonMain( int argc, const char **argv ) {
   }
 
   while (TRUE) {
-    printf("Waiting client...\n");
+    printf("Waiting client... ");
     int connected = ConnectNamedPipe(commandPipe, NULL);
 
-    if (!connected) {
+    if (connected) {
+      printf("Connected!\n");
+    } else {
       printf("Error connecting to command pipe\n");
       continue;
     }
 
-    char inputBuffer[256] = {0};
-    DWORD bytesRead = 0;
+    BOOL continueSession = TRUE;
 
-    while (TRUE) {
-      if (!ReadFile(commandPipe, inputBuffer, sizeof(inputBuffer), &bytesRead, NULL)) {
+    while (continueSession) {
+      AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_SHUTDOWN;
+
+      if (!ReadFile(commandPipe, &requestType, sizeof(requestType), NULL, NULL)) {
         break;
       }
 
-      if (inputBuffer[0] == '#') {
-        if (strcmp(inputBuffer, "#msg quit") == 0)
-          break;
+      switch (requestType) {
+      case APP_DAEMON_REQUEST_TYPE_TEST : {
+        AppDaemonRunTestRequest req = {0};
 
-        printf("  Unknown client command: %s\n", inputBuffer);
-      } else {
-        printf("  %s\n", inputBuffer);
+        if (ReadFile(commandPipe, &req, sizeof(req), NULL, NULL)) {
+          printf("  TEST %s\n", req.testPath);
+        } else {
+          printf("  TEST <invalid>\n");
+        }
+
+        break;
+      }
+
+      case APP_DAEMON_REQUEST_TYPE_SOLVE    : {
+        AppDaemonSolveRequest req = {0};
+
+        if (ReadFile(commandPipe, &req, sizeof(req), NULL, NULL)) {
+          printf(
+            "  SOLVE (%f %f %f)\n",
+            req.coefficents.a,
+            req.coefficents.b,
+            req.coefficents.c
+          );
+        } else {
+          printf("  SOLVE <invalid>\n");
+        }
+
+        break;
+      }
+
+      case APP_DAEMON_REQUEST_TYPE_SHUTDOWN : {
+        printf("  SHUTDOWN\n");
+        continueSession = FALSE;
+        break;
+      }
+
+      default: {
+        printf("  INVALID REQUEST TYPE: %d\n", requestType);
+        continueSession = FALSE;
+        break;
+      }
       }
     }
 

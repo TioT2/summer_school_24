@@ -2,21 +2,50 @@
 #define APP_H_
 
 #ifndef _WIN32
-#error WINAPI REQUIRED FOR THIS IMPLEMENTATION!!!
+#error WINAPI REQUIRED FOR THIS IMPLEMENTATION
 #endif
 
 #include <windows.h>
 #include <stdio.h>
 #include <stdint.h>
 
+#include "sqs/sqs.h"
+
 /// @brief common start for all pipes launched by this application name
 #define APP_PIPE_BASE               L"\\\\.\\pipe\\SS_SQS_"
 
-/// @brief daemon command input pipe name
-#define APP_DAEMON_COMMAND_PIPE     APP_PIPE_BASE L"DAEMON_COMMAND"
+/// @brief daemon<->client pipe name
+#define APP_DAEMON_CLIENT_PIPE      APP_PIPE_BASE L"DAEMON_CLIENT"
 
-/// @brief executor output pipe name
-#define APP_EXECUTOR_OUTPUT_PIPE    APP_PIPE_BASE L"EXECUTOR_OUTPUT"
+/// @brief daemon<->executor pipe name
+#define APP_DAEMON_EXECUTOR_PIPE    APP_PIPE_BASE L"DAEMON_EXECUTOR"
+
+/// @brief path legnth
+#define APP_PATH_LENGTH 256
+
+typedef enum __AppDaemonRequestType {
+  /// Run test file, sends path relative to server
+  APP_DAEMON_REQUEST_TYPE_TEST,
+
+  /// Solve single equation
+  APP_DAEMON_REQUEST_TYPE_SOLVE,
+
+  /// Shutdown request
+  APP_DAEMON_REQUEST_TYPE_SHUTDOWN,
+} AppDaemonRequestType;
+
+typedef struct __AppDaemonRunTestRequest {
+  char testPath[APP_PATH_LENGTH]; // Path of test to run
+} AppDaemonRunTestRequest;
+
+typedef struct __AppDaemonSolveRequest {
+  SqsQuadraticEquationCoefficents coefficents; // Coefficents for daemon to solve equation with
+} AppDaemonSolveRequest;
+
+/***
+ * Entry points of different project modes
+ ***/
+
 
 //----------------------------------------------------------------
 //! @brief client entry point
@@ -51,6 +80,8 @@ appDaemonMain( int argc, const char **argv );
 int
 appExecutorMain( int argc, const char **argv );
 
+
+
 /***
  * Utility functions
  ***/
@@ -65,6 +96,5 @@ appExecutorMain( int argc, const char **argv );
 //----------------------------------------------------------------
 int
 appPrintWinapiError( FILE *const file, DWORD error );
-
 
 #endif

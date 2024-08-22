@@ -3,7 +3,7 @@
 int
 appClientMain( int argc, const char **argv ) {
   HANDLE daemonCommandFile = CreateFile(
-    APP_DAEMON_COMMAND_PIPE,
+    APP_DAEMON_CLIENT_PIPE,
     GENERIC_WRITE,
     FILE_SHARE_WRITE,
     NULL,
@@ -24,7 +24,7 @@ appClientMain( int argc, const char **argv ) {
     char buffer[256] = {0};
 
     printf(">>> ");
-    
+
     for (int i = 0; i < sizeof(buffer) - 1; i++) {
       char c = (char)getchar();
       if (c == '\n') {
@@ -34,16 +34,61 @@ appClientMain( int argc, const char **argv ) {
       buffer[i] = c;
     }
 
-    if (buffer[0] == '#') {
-      if (strcmp(buffer, "#exit") == 0) {
-        const char *message = "#msg quit";
+    const char solveCommand[] = "solve";
+    const char testCommand[] = "test";
+    const char shutdownCommand[] = "shutdown";
 
-        WriteFile(daemonCommandFile, message, (DWORD)strlen(message), NULL, NULL);
-        break;
+    if (strncmp(buffer, solveCommand, sizeof(solveCommand) - 1) == 0) {
+      // parse solve arguments
+      AppDaemonSolveRequest req = {0};
+
+      int parsedCount = sscanf_s(
+        buffer + sizeof(solveCommand),
+        "%f %f %f",
+        &req.coefficents.a,
+        &req.coefficents.b,
+        &req.coefficents.c
+      );
+
+      if (parsedCount != 3) {
+        printf("Invalid quadratic coefficent string\n");
+        continue;
       }
-      printf("Unknow command: %s\n", buffer);
-    } else {
-      WriteFile(daemonCommandFile, buffer, (DWORD)strlen(buffer) + 1, NULL, NULL);
+
+      AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_SOLVE;
+      WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
+      WriteFile(daemonCommandFile, &req, sizeof(req), NULL, NULL);
+
+      continue;
+    }
+
+    if (strncmp(buffer, testCommand, sizeof(testCommand) - 1) == 0) {
+      AppDaemonRunTestRequest req = {0};
+
+      int parsedCount = sscanf_s(
+        buffer + sizeof(testCommand),
+        "%s",
+        req.testPath,
+        (uint32_t)sizeof(req.testPath)
+      );
+
+      if (parsedCount != 1) {
+        printf("Error during path parsing.");
+        continue;
+      }
+
+      AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_TEST;
+      WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
+      WriteFile(daemonCommandFile, &req, sizeof(req), NULL, NULL);
+
+      continue;
+    }
+
+    if (strncmp(buffer, shutdownCommand, sizeof(shutdownCommand) - 1) == 0) {
+      AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_SHUTDOWN;
+      WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
+
+      break;
     }
   }
 
