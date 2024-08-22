@@ -13,6 +13,9 @@
     <Filter Include="Source\Equation solver\Test">
       <UniqueIdentifier>{f8922532-65c5-437d-96ca-8198454f5ff1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Application">
+      <UniqueIdentifier>{3ac92e4c-d387-4d31-8b65-62fb6988cf6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -33,6 +36,18 @@
     <ClCompile Include="src\sqs\test\sqs_test_set.cpp">
       <Filter>Source\Equation solver\Test</Filter>
     </ClCompile>
+    <ClCompile Include="src\app\app_client.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app_daemon.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app_executor.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\sqs\sqs.h">
@@ -49,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="src\sqs\test\sqs_test.h">
       <Filter>Source\Equation solver\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\app.h">
+      <Filter>Source\Application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

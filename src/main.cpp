@@ -5,56 +5,26 @@
 #include <math.h>
 #include <stdint.h>
 
-#include <windows.h>
-#include <TlHelp32.h>
+#include "app/app.h"
 
-typedef enum __CliExecutionMode {
-  CLI_EXECUTION_MODE_DAEMON,
-  CLI_EXECUTION_MODE_CLIENT,
-} CliExecutionMode;
+/// @brief Utility
+#define CLI_TO_STRING(t) #t
 
-#define INVALID_PROCESS_ID (~0U)
+/// @brief foreground color setting string generation macro
+#define CLI_SET_FOREGROUND_COLOR(red, green, blue) "\033[38;2;" CLI_TO_STRING(red) ";" CLI_TO_STRING(green) ";" CLI_TO_STRING(blue) "m"
 
-uint32_t findDaemonProcessId( const wchar_t *name ) {
-  HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  uint32_t pid = INVALID_PROCESS_ID;
+/// @brief background color setting string generation macro
+#define CLI_SET_BACKGROUND_COLOR(red, green, blue) "\033[48;2;" CLI_TO_STRING(red) ";" CLI_TO_STRING(green) ";" CLI_TO_STRING(blue) "m"
 
-  PROCESSENTRY32 entry;
-  entry.dwSize = sizeof(entry);
+/// @brief color resetting macro
+#define CLI_RESET_COLOR() "\033[39m\033[49m"
 
-  do {
-    if (lstrcmpW(entry.szExeFile, name) == 0) {
-      pid = entry.th32ProcessID;
-      break;
-    }
-  } while (Process32Next(handle, &entry));
-
-  CloseHandle(handle);
-  return pid;
-}
-
-int
-cliRunClient( void ) {
-  uint32_t daemonPid = findDaemonProcessId(L"ss_sqs.exe");
-  if (daemonPid == INVALID_PROCESS_ID) {
-    printf("Can't find daemon PID\n");
-  } else {
-    printf("Daemon PID: %d\n", daemonPid);
-  }
-
-  return 0;
-}
-
-int
-cliRunDaemon( void ) {
-  printf("PID: %d\n", GetCurrentProcessId());
-
-  while (TRUE) {
-    __noop;
-  }
-
-  return 0;
-}
+typedef enum __AppExecutionMode {
+  APP_EXECUTION_MODE_UNDEFINED, // Undefined mode, resolves to client
+  APP_EXECUTION_MODE_DAEMON,    // Run daemon. Only one daemon instance should run on single device
+  APP_EXECUTION_MODE_CLIENT,    // Client - interface
+  APP_EXECUTION_MODE_EXECUTOR,  // Executor of daemon commands
+} AppExecutionMode;
 
 //----------------------------------------------------------------
 //! @brief project entry point
@@ -69,25 +39,49 @@ main(
   int argc,
   const char **argv
 ) {
-  CliExecutionMode executionMode = CLI_EXECUTION_MODE_CLIENT;
+  AppExecutionMode executionMode = APP_EXECUTION_MODE_UNDEFINED;
 
-  for (uint32_t argI = 1; argI < (uint32_t)argc; argI++) {
-    if (strcmp(argv[argI], "-d") == 0) {
-      executionMode = CLI_EXECUTION_MODE_DAEMON;
-      continue;
-    }
+  // define execution modes
+  const static struct __ExecModeDesc {
+    const char *key;
+    AppExecutionMode mode;
+  } modes[] = {
+    {"-d", APP_EXECUTION_MODE_DAEMON},
+    {"-c", APP_EXECUTION_MODE_CLIENT},
+    {"-e", APP_EXECUTION_MODE_EXECUTOR},
+  };
 
-    if (strcmp(argv[argI], "-c") == 0) {
-      executionMode = CLI_EXECUTION_MODE_CLIENT;
-      continue;
+  if (argc > 1) {
+    const char *key = argv[1];
+
+    for (int modeI = 0, modeCount = sizeof(modes) / sizeof(modes[0]); modeI < modeCount; modeI++) {
+      struct __ExecModeDesc mode = modes[modeI];
+
+      if (strcmp(mode.key, key) == 0) {
+        executionMode = mode.mode;
+        break;
+      }
     }
+  }
+
+  if (executionMode == APP_EXECUTION_MODE_UNDEFINED)
+    executionMode = APP_EXECUTION_MODE_CLIENT;
+
+  // custom argc/argv
+  int          argCount = 1;
+  const char **argValues = argv;
+
+  if (argc >= 2) {
+    argCount = argc - 2;
+    argValues = argv + 2;
   }
 
   switch (executionMode) {
-  case CLI_EXECUTION_MODE_DAEMON : return cliRunDaemon();
-  case CLI_EXECUTION_MODE_CLIENT : return cliRunClient();
-  default                        : return 1;
+  case APP_EXECUTION_MODE_DAEMON   : return appDaemonMain  (argCount, argValues);
+  case APP_EXECUTION_MODE_CLIENT   : return appClientMain  (argCount, argValues);
+  case APP_EXECUTION_MODE_EXECUTOR : return appExecutorMain(argCount, argValues);
+  default                          : return 1;
   }
 } // main function end
 
-// sqs_main.c file end
+// main.cpp file end
