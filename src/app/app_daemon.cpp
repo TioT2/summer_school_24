@@ -6,7 +6,7 @@ appDaemonMain( int argc, const char **argv ) {
 
   HANDLE commandPipe = CreateNamedPipe(
     APP_DAEMON_CLIENT_PIPE,
-    PIPE_ACCESS_INBOUND,
+    PIPE_ACCESS_DUPLEX,
     PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
     PIPE_UNLIMITED_INSTANCES,
     512,
@@ -68,6 +68,13 @@ appDaemonMain( int argc, const char **argv ) {
         } else {
           printf("  SOLVE <invalid>\n");
         }
+
+        AppDaemonSolveResponse res = {
+          .status = APP_DAEMON_SOLVE_RESPONSE_STATUS_ERROR,
+        };
+
+        // Send response
+        WriteFile(commandPipe, &res, sizeof(res), NULL, NULL);
 
         break;
       }

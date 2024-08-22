@@ -4,8 +4,8 @@ int
 appClientMain( int argc, const char **argv ) {
   HANDLE daemonCommandFile = CreateFile(
     APP_DAEMON_CLIENT_PIPE,
-    GENERIC_WRITE,
-    FILE_SHARE_WRITE,
+    GENERIC_READ | GENERIC_WRITE,
+    FILE_SHARE_READ | FILE_SHARE_WRITE,
     NULL,
     OPEN_EXISTING,
     0,
@@ -59,6 +59,27 @@ appClientMain( int argc, const char **argv ) {
       WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
       WriteFile(daemonCommandFile, &req, sizeof(req), NULL, NULL);
 
+      AppDaemonSolveResponse res = {};
+
+      if (!ReadFile(daemonCommandFile, &res, sizeof(res), NULL, NULL)) {
+        continue;
+      }
+
+      printf("--> ");
+
+      switch (res.status) {
+      case APP_DAEMON_SOLVE_RESPONSE_STATUS_OK:
+        printf("OK: ");
+        sqsPrintQuadraticSolution(stdout, &res.solution);
+        break;
+
+      case APP_DAEMON_SOLVE_RESPONSE_STATUS_ERROR:
+        printf("ERROR");
+        break;
+      }
+
+      printf("\n");
+
       continue;
     }
 
@@ -87,7 +108,6 @@ appClientMain( int argc, const char **argv ) {
     if (strncmp(buffer, shutdownCommand, sizeof(shutdownCommand) - 1) == 0) {
       AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_SHUTDOWN;
       WriteFile(daemonCommandFile, &requestType, sizeof(requestType), NULL, NULL);
-
       break;
     }
   }
