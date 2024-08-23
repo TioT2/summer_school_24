@@ -107,14 +107,22 @@ appClientHandleTest( AppClientContext *const context, const char *buffer ) {
 
       switch (entry.executorStatus) {
       case APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_NORMALLY_EXECUTED: {
-        printf("    OK      ");
+        printf(
+          CLI_SET_FOREGROUND_COLOR(0, 255, 0)
+          "    OK      "
+          CLI_RESET_COLOR()
+        );
         sqsPrintTestQuadraticFeedback(stdout, i + 1, &entry.feedback);
         printf("\n");
         break;
       }
 
       case APP_DAEMON_TEST_RESPONSE_EXECUTOR_STATUS_EXECUTOR_CRASHED: {
-        printf("    CRASHED\n");
+        printf(
+          CLI_SET_FOREGROUND_COLOR(255, 0, 0)
+          "    CRASHED\n"
+          CLI_RESET_COLOR()
+        );
         break;
       }
       }
@@ -187,7 +195,9 @@ appRunClient( AppClientContext *const context ) {
 
   if (context->daemonPipe == INVALID_HANDLE_VALUE) {
     printf(
+      CLI_SET_FOREGROUND_COLOR(255, 0, 0)
       "FATAL ERORR:"
+      CLI_RESET_COLOR()
       "Can't open daemon handle\n"
     );
     return;

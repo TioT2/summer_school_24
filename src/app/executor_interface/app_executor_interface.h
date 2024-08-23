@@ -6,16 +6,16 @@
 
 /// @brief executor representation structure
 typedef struct __AppExecutor {
-  HANDLE _hStdinRead;   /// STDIN  pipe read
-  HANDLE _hStdinWrite;  /// STDIN  pipe write
-  HANDLE _hStdoutRead;  /// STDOUT pipe read
-  HANDLE _hStdoutWrite; /// STDOUT pipe write
+  HANDLE _hStdinRead;   ///< STDIN  pipe read
+  HANDLE _hStdinWrite;  ///< STDIN  pipe write
+  HANDLE _hStdoutRead;  ///< STDOUT pipe read
+  HANDLE _hStdoutWrite; ///< STDOUT pipe write
 
-  HANDLE _hProcess;     /// process handle
-  HANDLE _hThread;      /// thread handle
+  HANDLE _hProcess;     ///< process handle
+  HANDLE _hThread;      ///< thread handle
 
-  HANDLE hStdin;        /// public STDIN  handle
-  HANDLE hStdout;       /// public STDOUT handle
+  HANDLE hStdin;        ///< public STDIN  handle
+  HANDLE hStdout;       ///< public STDOUT handle
 } AppExecutor;
 
 /// @brief executor task type
@@ -32,14 +32,31 @@ typedef enum __AppExecutorTaskType {
 
 /// @brief executor task
 typedef enum __AppExecutorTaskStatus {
-  APP_EXECUTOR_TASK_STATUS_OK,      // ok
-  APP_EXECUTOR_TASK_STATUS_CRASHED, // crashed
+  /// ok
+  APP_EXECUTOR_TASK_STATUS_OK,
+
+  /// crashed
+  APP_EXECUTOR_TASK_STATUS_CRASHED,
 } AppExecutorTaskStatus;
 
 // @brief executor crash report representation structure
 typedef struct __AppExecutorCrashReport {
-  int signal; /// signal application crashed with
+  int signal;          ///< signal application crashed with
+  int traceFrameCount; ///< stacktrace depth (<= 32)
 } AppExecutorCrashReport;
+
+/// @brief maximal stack trace name len
+#define APP_EXECUTOR_STACK_TRACE_NAME_LEN     (256)
+
+/// @brief unknown line index
+#define APP_EXECUTOR_STACK_TRACE_LINE_UNKNOWN (~0U)
+
+/// @brief stackframe representation structure
+typedef struct __AppExecutorStackFrame {
+  char moduleName[APP_EXECUTOR_STACK_TRACE_NAME_LEN]; ///< module name
+  char symbolName[APP_EXECUTOR_STACK_TRACE_NAME_LEN]; ///< function name
+  int  line;                                 ///< line
+} AppExecutorStackFrame;
 
 //----------------------------------------------------------------
 //! @brief executor initialization function

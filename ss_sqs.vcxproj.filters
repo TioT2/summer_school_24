@@ -19,6 +19,9 @@
     <Filter Include="Source\Application\Executor interface">
       <UniqueIdentifier>{c53375c7-e3da-4f53-b781-a777e401c2be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Application\Executor implementation">
+      <UniqueIdentifier>{0fb8c9c1-f2e1-4b35-9279-df2b7806302a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -45,14 +48,20 @@
     <ClCompile Include="src\app\app_daemon.cpp">
       <Filter>Source\Application</Filter>
     </ClCompile>
-    <ClCompile Include="src\app\app_executor.cpp">
-      <Filter>Source\Application</Filter>
-    </ClCompile>
     <ClCompile Include="src\app\app.cpp">
       <Filter>Source\Application</Filter>
     </ClCompile>
     <ClCompile Include="src\app\executor_interface\app_executor_interface.cpp">
       <Filter>Source\Application\Executor interface</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\executor_impl\app_executor_impl.cpp">
+      <Filter>Source\Application\Executor implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\executor_impl\app_executor_impl_signal.cpp">
+      <Filter>Source\Application\Executor implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app_help.cpp">
+      <Filter>Source\Application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="src\app\executor_interface\app_executor_interface.h">
       <Filter>Source\Application\Executor interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\executor_impl\app_executor_impl.h">
+      <Filter>Source\Application\Executor implementation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

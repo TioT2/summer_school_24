@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include "app.h"
 #include "executor_interface/app_executor_interface.h"
 
@@ -6,6 +8,49 @@ typedef struct __AppDaemonContext {
   HANDLE clientPipe;      /// daemon<->client pipe
   BOOL   continueSession; /// continue client session while true
 } AppDaemonContext;
+
+//----------------------------------------------------------------
+//! @brief executor crash logging function
+//!
+//! @param [in] file        file to log report to
+//! @param [in] crashReport crash report
+//! @param [in] executor    executor to read report from
+//----------------------------------------------------------------
+static void
+appDaemonLogCrashReport(
+  FILE *const file,
+  const AppExecutorCrashReport *const crashReport,
+  const AppExecutor *const executor
+) {
+  AppExecutorStackFrame stackFrame;
+
+  const char *signalName;
+  switch (crashReport->signal) {
+  case SIGINT   : signalName = "SIGINT";   break;
+  case SIGILL   : signalName = "SIGILL";   break;
+  case SIGFPE   : signalName = "SIGFPE";   break;
+  case SIGSEGV  : signalName = "SIGSEGV";  break;
+  case SIGTERM  : signalName = "SIGTERM";  break;
+  case SIGBREAK : signalName = "SIGBREAK"; break;
+  case SIGABRT  : signalName = "SIGABRT";  break;
+  default       : signalName = "<unknown>";
+  }
+
+  fprintf(file, "  Executor crashed with %s signal. Stacktrace: \n", signalName);
+  for (int32_t i = 0; i < crashReport->traceFrameCount; i++) {
+    if (!ReadFile(executor->hStdout, &stackFrame, sizeof(stackFrame), NULL, NULL))
+      return;
+
+    fprintf(file, "    #%d:\n", i);
+    fprintf(file, "      file    : %s\n", stackFrame.moduleName);
+    fprintf(file, "      function: %s\n", stackFrame.symbolName);
+
+    if (stackFrame.line == APP_EXECUTOR_STACK_TRACE_LINE_UNKNOWN)
+      fprintf(file, "      line    : <unknown>\n");
+    else
+      fprintf(file, "      line    : %d\n", stackFrame.line);
+  }
+} // appDaemonLogStackFrame function end
 
 //----------------------------------------------------------------
 //! @brief TEST task handling function
@@ -100,6 +145,14 @@ appDaemonContextHandleTest( AppDaemonContext *const context ) {
       crashed = TRUE;
     } else {
       crashed = (taskStatus == APP_EXECUTOR_TASK_STATUS_CRASHED);
+
+      if (taskStatus == APP_EXECUTOR_TASK_STATUS_CRASHED) {
+        AppExecutorCrashReport crashReport = {0};
+
+        if (ReadFile(executor.hStdout, &crashReport, sizeof(crashReport), NULL, NULL))
+          appDaemonLogCrashReport(stdout, &crashReport, &executor);
+      }
+
     }
 
     if (!crashed) {
@@ -190,6 +243,8 @@ appDaemonContextHandleSolve( AppDaemonContext *const context ) {
 
   if (taskStatus != APP_EXECUTOR_TASK_STATUS_CRASHED) {
     if (!ReadFile(executor.hStdout, &res.solution, sizeof(res.solution), NULL, NULL)) {
+
+
       appCloseExecutor(&executor);
       WriteFile(context->clientPipe, &res, sizeof(res), NULL, NULL);
       return;

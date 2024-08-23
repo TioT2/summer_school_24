@@ -22,7 +22,8 @@
 typedef enum __AppExecutionMode {
   APP_EXECUTION_MODE_UNDEFINED, // Undefined mode, resolves to client
   APP_EXECUTION_MODE_DAEMON,    // Run daemon. Only one daemon instance should run on single device
-  APP_EXECUTION_MODE_CLIENT,    // Client - interface
+  APP_EXECUTION_MODE_CLIENT,    // Connect to daemon and show CLI
+  APP_EXECUTION_MODE_HELP,      // Show help
   APP_EXECUTION_MODE_EXECUTOR,  // Executor of daemon commands
 } AppExecutionMode;
 
@@ -51,6 +52,7 @@ main(
     {"-d", APP_EXECUTION_MODE_DAEMON},
     {"-c", APP_EXECUTION_MODE_CLIENT},
     {"-e", APP_EXECUTION_MODE_EXECUTOR},
+    {"-h", APP_EXECUTION_MODE_HELP},
   };
 
   if (argc > 1) {
@@ -67,10 +69,10 @@ main(
   }
 
   if (executionMode == APP_EXECUTION_MODE_UNDEFINED)
-    executionMode = APP_EXECUTION_MODE_CLIENT;
+    executionMode = APP_EXECUTION_MODE_DAEMON;
 
   // custom argc/argv
-  int          argCount = 1;
+  int          argCount  = 0;
   const char **argValues = argv;
 
   if (argc >= 2) {
@@ -82,8 +84,10 @@ main(
   case APP_EXECUTION_MODE_DAEMON   : return appDaemonMain  (argCount, argValues);
   case APP_EXECUTION_MODE_CLIENT   : return appClientMain  (argCount, argValues);
   case APP_EXECUTION_MODE_EXECUTOR : return appExecutorMain(argCount, argValues);
+  case APP_EXECUTION_MODE_HELP     : return appHelpMain    (argCount, argValues);
   default                          : return 1;
   }
+
 } // main function end
 
 // main.cpp file end

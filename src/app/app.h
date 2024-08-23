@@ -145,4 +145,15 @@ appDaemonMain( int argc, const char **argv );
 int
 appExecutorMain( int argc, const char **argv );
 
+//----------------------------------------------------------------
+//! @brief help entry point
+//!
+//! @param [in] argc count of input parameters
+//! @param [in] argv parameter strings
+//! 
+//! @return exit status
+//----------------------------------------------------------------
+int
+appHelpMain( int argc, const char **argv );
+
 #endif
