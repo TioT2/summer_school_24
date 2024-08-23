@@ -6,16 +6,16 @@
 
 /// @brief executor representation structure
 typedef struct __AppExecutor {
-  HANDLE _hStdinRead;   // STDIN  pipe read
-  HANDLE _hStdinWrite;  // STDIN  pipe write
-  HANDLE _hStdoutRead;  // STDOUT pipe read
-  HANDLE _hStdoutWrite; // STDOUT pipe write
+  HANDLE _hStdinRead;   /// STDIN  pipe read
+  HANDLE _hStdinWrite;  /// STDIN  pipe write
+  HANDLE _hStdoutRead;  /// STDOUT pipe read
+  HANDLE _hStdoutWrite; /// STDOUT pipe write
 
-  HANDLE _hProcess;     // process handle
-  HANDLE _hThread;      // thread handle
+  HANDLE _hProcess;     /// process handle
+  HANDLE _hThread;      /// thread handle
 
-  HANDLE hStdin;        // public STDIN  handle
-  HANDLE hStdout;       // public STDOUT handle
+  HANDLE hStdin;        /// public STDIN  handle
+  HANDLE hStdout;       /// public STDOUT handle
 } AppExecutor;
 
 /// @brief executor task type

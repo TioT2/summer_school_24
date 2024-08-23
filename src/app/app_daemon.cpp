@@ -290,9 +290,8 @@ appDaemonContextRun( AppDaemonContext *const context ) {
     while (continueSession) {
       AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_QUIT;
 
-      if (!ReadFile(context->clientPipe, &requestType, sizeof(requestType), NULL, NULL)) {
+      if (!ReadFile(context->clientPipe, &requestType, sizeof(requestType), NULL, NULL))
         break;
-      }
 
       switch (requestType) {
       case APP_DAEMON_REQUEST_TYPE_TEST :

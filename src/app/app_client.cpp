@@ -2,10 +2,15 @@
 
 /// @brief client execution context representation structure
 typedef struct __AppClientContext {
-  HANDLE daemonPipe; // daemon pipe handle
+  HANDLE daemonPipe; /// daemon pipe handle
 } AppClientContext;
 
-
+//----------------------------------------------------------------
+//! @brief 'solve' command handling function
+//!
+//! @param [in] context client context
+//! @param [in] buffer  command parameter buffer
+//----------------------------------------------------------------
 static void
 appClientHandleSolve( AppClientContext *const context, const char *buffer ) {
   // parse solve arguments
@@ -48,8 +53,14 @@ appClientHandleSolve( AppClientContext *const context, const char *buffer ) {
   }
 
   printf("\n");
-}
+} // appClientHandleSolve function end
 
+//----------------------------------------------------------------
+//! @brief 'test' command handling function
+//!
+//! @param [in] context client context
+//! @param [in] buffer  command parameter buffer
+//----------------------------------------------------------------
 static void
 appClientHandleTest( AppClientContext *const context, const char *buffer ) {
   AppDaemonTestRequest req = {0};
@@ -126,14 +137,26 @@ appClientHandleTest( AppClientContext *const context, const char *buffer ) {
     break;
   }
   }
-}
+} // appClientHandleTest function end
 
+//----------------------------------------------------------------
+//! @brief 'quit' command handling function
+//!
+//! @param [in] context client context
+//! @param [in] buffer  command parameter buffer
+//----------------------------------------------------------------
 static void
 appClientHandleQuit( AppClientContext *const context, const char * ) {
   AppDaemonRequestType requestType = APP_DAEMON_REQUEST_TYPE_QUIT;
   WriteFile(context->daemonPipe, &requestType, sizeof(requestType), NULL, NULL);
-}
+} // appClientHandleQuit function end
 
+//----------------------------------------------------------------
+//! @brief 'help' command handling function
+//!
+//! @param [in] context client context
+//! @param [in] buffer  command parameter buffer
+//----------------------------------------------------------------
 static void
 appClientHandleHelp( AppClientContext *const, const char * ) {
   printf(
@@ -143,8 +166,13 @@ appClientHandleHelp( AppClientContext *const, const char * ) {
     "  Run test file                      test [path_to_test]\n"
     "  Quit from program                  quit\n"
   );
-}
+} // appClientHandleHelp function end
 
+//----------------------------------------------------------------
+//! @brief client startup function
+//!
+//! @param [in] context client context to run client in
+//----------------------------------------------------------------
 static void
 appRunClient( AppClientContext *const context ) {
   context->daemonPipe = CreateFile(
@@ -166,23 +194,17 @@ appRunClient( AppClientContext *const context ) {
   }
 
   while (TRUE) {
-    char buffer[256] = {0};
-
     printf(">>> ");
 
-    for (int i = 0; i < sizeof(buffer) - 1; i++) {
-      char c = (char)getchar();
-      if (c == '\n') {
-        buffer[i] = '\0';
-        break;
-      }
-      buffer[i] = c;
-    }
+    char buffer[256] = {0};
+
+    // read string from input
+    cliGetString(buffer, sizeof(buffer));
 
     const static struct __AppCommand {
-      const char *command;
-      void (*handle)( AppClientContext *, const char * );
-      BOOL doReturn;
+      const char *command;                                /// command name pointer
+      void (*handle)( AppClientContext *, const char * ); /// handle pointer
+      BOOL doReturn;                                      /// TRUE if command should end execution
     } commands[] = {
       {"solve", appClientHandleSolve, FALSE},
       {"test" , appClientHandleTest , FALSE},
@@ -209,7 +231,6 @@ appRunClient( AppClientContext *const context ) {
 
   CloseHandle(context->daemonPipe);
 } // appRunClient function end
-
 
 int
 appClientMain( int, const char ** ) {

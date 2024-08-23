@@ -89,7 +89,7 @@ typedef struct __AppDaemonTestResponseEntry {
 
 /// @brief solve request representation structure
 typedef struct __AppDaemonSolveRequest {
-  SqsQuadraticEquationCoefficents coefficents; // coefficents for daemon to solve equation with
+  SqsQuadraticEquationCoefficents coefficents; /// coefficents for daemon to solve equation with
 } AppDaemonSolveRequest;
 
 /// @brief status of daemon solve response
@@ -103,8 +103,8 @@ typedef enum __AppDaemonSolveResponseStatus {
 
 /// @brief response on daemon solve request representation structure
 typedef struct __AppDaemonSolveResponse {
-  AppDaemonSolveResponseStatus status;   // Response status
-  SqsQuadraticSolution         solution; // Actually, solution
+  AppDaemonSolveResponseStatus status;   /// Response status
+  SqsQuadraticSolution         solution; /// Actually, solution
 } AppDaemonSolveResponse;
 
 /***

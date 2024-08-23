@@ -6,7 +6,7 @@
 /// @brief STDOUT global constant
 static HANDLE appExecutorStdout = NULL;
 
-// @brief STDIN global constant
+/// @brief STDIN global constant
 static HANDLE appExecutorStdin = NULL;
 
 //----------------------------------------------------------------

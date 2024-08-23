@@ -10,9 +10,9 @@
 
 /// @brief Command line parameter iterator utility
 typedef struct __CliParameterIterator {
-  int           _argc;  // argument count
-  const char ** _argv;  // argument values
-  int           _index; // index of current argument
+  int           _argc;  /// argument count
+  const char ** _argv;  /// argument values
+  int           _index; /// index of current argument
 } CliParameterIterator;
 
 //----------------------------------------------------------------
@@ -56,6 +56,25 @@ cliParameterIteratorNext( CliParameterIterator *const SQR_RESTRICT _this );
 //----------------------------------------------------------------
 void
 cliClearStdin( void );
+
+//----------------------------------------------------------------
+//! @brief string from stdin gettig function
+//! 
+//! @param [out] buffer     buffer to write pointer
+//! @param [in]  bufferSize size of buffer allowed to write in
+//! 
+//! @return length of scanned string
+//----------------------------------------------------------------
+size_t
+cliGetString( char *const buffer, const size_t bufferSize );
+
+//----------------------------------------------------------------
+//! @brief skip string from stdin
+//! 
+//! @return length of skipped string
+//----------------------------------------------------------------
+size_t
+cliSkipString( void );
 
 //----------------------------------------------------------------
 //! @brief test performing function

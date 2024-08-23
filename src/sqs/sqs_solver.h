@@ -27,9 +27,9 @@ typedef struct __SqsQuadraticEquationCoefficents {
 
 /// @brief quadratic equation solution representation structure
 typedef struct __SqsQuadraticSolution {
-  SqsQuadraticSolveStatus status; // solve status
-  float result1;                  // first result
-  float result2;                  // second result
+  SqsQuadraticSolveStatus status; /// solve status
+  float result1;                  /// first result
+  float result2;                  /// second result
 } SqsQuadraticSolution;
 
 //----------------------------------------------------------------

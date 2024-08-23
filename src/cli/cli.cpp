@@ -39,14 +39,39 @@ cliRunTests( void ) {
   return result;
 } // cliRunTests function end
 
-//----------------------------------------------------------------
-//! @brief stdin from console input clearing function
-//----------------------------------------------------------------
 void
 cliClearStdin( void ) {
   while (getchar() != '\n')
     ;
 } // cliClearStdin function end
+
+size_t
+cliGetString( char *const buffer, const size_t bufferSize ) {
+  assert(buffer != NULL);
+
+  char *bptr = buffer;
+  char *const eptr = buffer + bufferSize - 1;
+
+  while (bptr < eptr) {
+    char c = (char)getchar();
+    if (c == '\n')
+      break;
+    *bptr++ = c;
+  }
+
+  *bptr = '\0';
+
+  return bptr - buffer;
+} // cliGetString function end
+
+size_t
+cliSkipString( void ) {
+  for (size_t len = 0; ; len++) {
+    char c = (char)getchar();
+    if (c == '\n')
+      return len;
+  }
+} // cliSkipString function end
 
 //----------------------------------------------------------------
 //! @brief menu running function
