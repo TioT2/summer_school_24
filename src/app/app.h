@@ -63,8 +63,8 @@ typedef enum __AppDaemonTestResponseStatus {
 
 /// @brief test response header representation structure
 typedef struct __AppDaemonTestResponseHeader {
-  AppDaemonTestResponseStatus status;     /// response status
-  uint32_t                    entryCount; /// count of test entries
+  AppDaemonTestResponseStatus status;     ///< response status
+  uint32_t                    entryCount; ///< count of test entries
 } AppDaemonTestResponseHeader;
 
 /// @brief executor status during test execution representation structure
@@ -78,8 +78,8 @@ typedef enum __AppDaemonTestResponseExecutorStatus {
 
 /// @brief test run request response element representation structure
 typedef struct __AppDaemonTestResponseEntry {
-  AppDaemonTestResponseExecutorStatus executorStatus; /// executor status
-  SqsTestQuadraticFeedback            feedback;       /// executor feedback
+  AppDaemonTestResponseExecutorStatus executorStatus; ///< executor status
+  SqsTestQuadraticFeedback            feedback;       ///< executor feedback
 } AppDaemonTestResponseEntry;
 
 
@@ -89,7 +89,7 @@ typedef struct __AppDaemonTestResponseEntry {
 
 /// @brief solve request representation structure
 typedef struct __AppDaemonSolveRequest {
-  SqsQuadraticEquationCoefficents coefficents; /// coefficents for daemon to solve equation with
+  SqsQuadraticEquationCoefficents coefficents; ///< coefficents for daemon to solve equation with
 } AppDaemonSolveRequest;
 
 /// @brief status of daemon solve response
@@ -103,8 +103,8 @@ typedef enum __AppDaemonSolveResponseStatus {
 
 /// @brief response on daemon solve request representation structure
 typedef struct __AppDaemonSolveResponse {
-  AppDaemonSolveResponseStatus status;   /// Response status
-  SqsQuadraticSolution         solution; /// Actually, solution
+  AppDaemonSolveResponseStatus status;   ///< Response status
+  SqsQuadraticSolution         solution; ///< Actually, solution
 } AppDaemonSolveResponse;
 
 /***

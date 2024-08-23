@@ -10,9 +10,9 @@
 
 /// @brief Command line parameter iterator utility
 typedef struct __CliParameterIterator {
-  int           _argc;  /// argument count
-  const char ** _argv;  /// argument values
-  int           _index; /// index of current argument
+  int           _argc;  ///< argument count
+  const char ** _argv;  ///< argument values
+  int           _index; ///< index of current argument
 } CliParameterIterator;
 
 //----------------------------------------------------------------

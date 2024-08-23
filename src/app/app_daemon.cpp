@@ -5,8 +5,8 @@
 
 /// @brief daemon context representation structure
 typedef struct __AppDaemonContext {
-  HANDLE clientPipe;      /// daemon<->client pipe
-  BOOL   continueSession; /// continue client session while true
+  HANDLE clientPipe;      ///< daemon<->client pipe
+  BOOL   continueSession; ///< continue client session while true
 } AppDaemonContext;
 
 //----------------------------------------------------------------

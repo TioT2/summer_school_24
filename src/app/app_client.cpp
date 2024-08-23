@@ -2,7 +2,7 @@
 
 /// @brief client execution context representation structure
 typedef struct __AppClientContext {
-  HANDLE daemonPipe; /// daemon pipe handle
+  HANDLE daemonPipe; ///< daemon pipe handle
 } AppClientContext;
 
 //----------------------------------------------------------------

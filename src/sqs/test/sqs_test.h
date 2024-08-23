@@ -9,22 +9,22 @@ typedef void (SQS_API *SqsTestQuadraticSolver)( const SqsQuadraticEquationCoeffi
 
 /// @brief quadratic equation solve test feedback representation structure
 typedef struct __SqsTestQuadraticFeedback {
-  SqsBool                         ok;               /// test status; SQS_TRUE if succeeded
-  SqsQuadraticEquationCoefficents coefficents;      /// tested equation coefficents
-  SqsQuadraticSolution            expectedSolution; /// expected equation solution
-  SqsQuadraticSolution            actualSolution;   /// actual equation solution
+  SqsBool                         ok;               ///< test status; SQS_TRUE if succeeded
+  SqsQuadraticEquationCoefficents coefficents;      ///< tested equation coefficents
+  SqsQuadraticSolution            expectedSolution; ///< expected equation solution
+  SqsQuadraticSolution            actualSolution;   ///< actual equation solution
 } SqsTestQuadraticFeedback;
 
 /// @brief quadratic test representation structure
 typedef struct __SqsQuadraticTest {
-  SqsQuadraticEquationCoefficents coefficents;      /// test coefficents
-  SqsQuadraticSolution            expectedSolution; /// expected test solution
+  SqsQuadraticEquationCoefficents coefficents;      ///< test coefficents
+  SqsQuadraticSolution            expectedSolution; ///< expected test solution
 } SqsQuadraticTest;
 
 /// @brief set of test representation structure
 typedef struct __SqsQuadraticTestSet {
-  SqsQuadraticTest * tests;     /// test array
-  uint32_t           testCount; /// test array size
+  SqsQuadraticTest * tests;     ///< test array
+  uint32_t           testCount; ///< test array size
 } SqsQuadraticTestSet;
 
 //----------------------------------------------------------------

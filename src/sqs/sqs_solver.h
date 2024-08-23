@@ -20,16 +20,16 @@ typedef enum __SqsQuadraticSolveStatus {
 
 /// @brief quadratic equation coefficents representation structure
 typedef struct __SqsQuadraticEquationCoefficents {
-  float a; /// a coefficent
-  float b; /// b coefficent
-  float c; /// c coefficent
+  float a; ///< a coefficent
+  float b; ///< b coefficent
+  float c; ///< c coefficent
 } SqsQuadraticEquationCoefficents;
 
 /// @brief quadratic equation solution representation structure
 typedef struct __SqsQuadraticSolution {
-  SqsQuadraticSolveStatus status; /// solve status
-  float result1;                  /// first result
-  float result2;                  /// second result
+  SqsQuadraticSolveStatus status; ///< solve status
+  float result1;                  ///< first result
+  float result2;                  ///< second result
 } SqsQuadraticSolution;
 
 //----------------------------------------------------------------
@@ -81,5 +81,4 @@ sqsParseQuadraticEquationCoefficents( FILE *const stream, SqsQuadraticEquationCo
 //----------------------------------------------------------------
 SqsBool SQS_API
 sqsQuadraticSolutionEqual( const SqsQuadraticSolution *const lhs, const SqsQuadraticSolution *const rhs );
-
 #endif // !defined(SQS_SOLVER_H_)
