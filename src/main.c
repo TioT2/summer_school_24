@@ -21,16 +21,17 @@ main( void ) {
   fclose(f);
   assert(cond);
 
-  fopen_s(&f, "test_out/out_sort_start.txt", "w");
+  fopen_s(&f, "test_out/out.txt", "w");
+
   assert(f != NULL);
+
   poeSortText(&text, poeCompareFromStart);
   poeWriteText(f, &text);
-  fclose(f);
-
-  fopen_s(&f, "test_out/out_sort_init.txt", "w");
-  assert(f != NULL);
-  poeSortText(&text, poeCompareInitialOrder);
+  poeSortText(&text, poeCompareFromEnd);
   poeWriteText(f, &text);
+  poeSortText(&text, poeCompareFromStart);
+  poeWriteText(f, &text);
+
   fclose(f);
 
   poeDestroyText(&text);
