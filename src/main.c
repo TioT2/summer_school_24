@@ -15,13 +15,24 @@ main( void ) {
   PoeText text = {0};
   FILE *f;
 
-  fopen_s(&f, "test/onegin.txt", "r");
+  fopen_s(&f, "test/1984.txt", "r");
   assert(f != NULL);
   cond = poeParseText(f, &text);
   fclose(f);
   assert(cond);
 
-  poeWriteText(stdout, &text);
+  fopen_s(&f, "test_out/out_sort_start.txt", "w");
+  assert(f != NULL);
+  poeSortText(&text, poeCompareFromStart);
+  poeWriteText(f, &text);
+  fclose(f);
+
+  fopen_s(&f, "test_out/out_sort_init.txt", "w");
+  assert(f != NULL);
+  poeSortText(&text, poeCompareInitialOrder);
+  poeWriteText(f, &text);
+  fclose(f);
+
   poeDestroyText(&text);
 
   return 0;

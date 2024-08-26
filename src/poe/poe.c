@@ -7,8 +7,8 @@ poeParseText( FILE *const file, PoeText *const dst ) {
   assert(file != NULL);
   assert(dst != NULL);
 
-  char buffer[512] = {0};
-  const int bufferLength = 512;
+  char buffer[2048] = {0};
+  const int bufferLength = 2048;
 
   char *stringBuffer = darrCreate(char, 0);
   size_t *stringIndexBuffer = darrCreate(size_t, 0);

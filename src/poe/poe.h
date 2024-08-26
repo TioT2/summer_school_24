@@ -5,6 +5,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <ctype.h>
 
 /// Boolean type
 typedef int PoeBool;
@@ -89,7 +90,7 @@ poeDestroyText( PoeText *const text );
  * @return lhs and rhs element ordering
  */
 typedef PoeOrdering
-(* POE_API PoeStringCompareFn)( const char *lhs, const char *rhs );
+(POE_API * PoeStringCompareFn)( const char *lhs, const char *rhs );
 
 /**
  * @brief text sorting function
@@ -104,7 +105,7 @@ poeSortText( PoeText *const text, const PoeStringCompareFn compareFn );
  ***/
 
 /**
- * @brief initial-order-restoring compare function
+ * @brief by initial parsing order comparing function
  * @ingroup PoeStringCompareFunctions
  * 
  * @param lhs left hand side

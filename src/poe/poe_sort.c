@@ -22,7 +22,7 @@ poeTextQsortPartition( const char **array, const size_t begin, const size_t end,
       i++;
 
     while (compareFn(array[j], pivot) == POE_ORDERING_MORE)
-      j++;
+      j--;
 
     if (i >= j)
       return j;
@@ -32,7 +32,7 @@ poeTextQsortPartition( const char **array, const size_t begin, const size_t end,
     array[j] = tmp;
 
     i++;
-    j++;
+    j--;
   }
 } // poeTextQsortPartition function end
 
