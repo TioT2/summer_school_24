@@ -57,20 +57,20 @@ appSignalHandler( int signal ) {
     memset(symbolInfo, 0, sizeof(symbolInfoLocation));
 
     symbolInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
-    symbolInfo->MaxNameLen = APP_EXECUTOR_STACK_TRACE_NAME_LEN;
+    symbolInfo->MaxNameLen = APP_EXECUTOR_STACK_TRACE_NAME_LEN - 1;
 
     const char *const unknown = "<unknown>";
 
     // get symbol name
     DWORD64 symDisp = 0;
     if (SymFromAddr(hProcess, traceAddr, &symDisp, symbolInfo)) {
-      memcpy(stackFrame.symbolName, symbolInfo->Name, symbolInfo->NameLen);
+      memcpy(stackFrame.symbolName, symbolInfo->Name, APP_EXECUTOR_STACK_TRACE_NAME_LEN);
     } else {
       memcpy(stackFrame.symbolName, unknown, strlen(unknown));
     }
 
     // get module name
-    if (!GetModuleFileNameA(hTraceModule, stackFrame.moduleName, APP_EXECUTOR_STACK_TRACE_NAME_LEN)) {
+    if (!GetModuleFileNameA(hTraceModule, stackFrame.moduleName, APP_EXECUTOR_STACK_TRACE_NAME_LEN - 1)) {
       memcpy(stackFrame.moduleName, unknown, strlen(unknown));
     }
 
