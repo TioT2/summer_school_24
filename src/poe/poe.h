@@ -16,18 +16,19 @@ typedef int PoeBool;
 /// FALSE
 #define POE_FALSE 0
 
+/// Calling convention
 #define POE_API __cdecl
 
 /// Ordering
 typedef enum __PoeOrdering {
   /// Lhs less than rhs
-  POE_ORDERING_LESS,
+  POE_ORDERING_LESS = -1,
 
   /// Lhs is equal to rhs
-  POE_ORDERING_EQUAL,
+  POE_ORDERING_EQUAL = 0,
 
   /// Lhs is more than rhs
-  POE_ORDERING_MORE,
+  POE_ORDERING_MORE = 1,
 } PoeOrdering;
 
 /**
@@ -99,6 +100,14 @@ typedef PoeOrdering
  */
 void POE_API
 poeSortText( PoeText *const text, const PoeStringCompareFn compareFn );
+
+/**
+ * @brief text by standard qsort_s sorting function
+ * @param text      text to sort
+ * @param compareFn compare function
+ */
+void POE_API
+poeSortTextStd( PoeText *const text, const PoeStringCompareFn compareFn );
 
 /***
  * compare functions (group PoeStringCompareFunctions)

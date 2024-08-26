@@ -65,4 +65,24 @@ poeSortText( PoeText *const text, const PoeStringCompareFn compareFn ) {
   poeTextQsort(text->strings, 0, text->stringCount - 1, compareFn);
 } // poeSortText function end
 
+/**
+ * @brief standard library qsort_s compare function wrapper for POE compare functions
+ * @param compareFn compare function (passed through qsort_s context)
+ * @param lhs       left hand side
+ * @param rhs       right hand side
+ * @return compare result
+ */
+static int __cdecl
+poeStdCompareWrapper( void *compareFn, const void *lhs, const void *rhs ) {
+  return ((PoeStringCompareFn)compareFn)((const char *)lhs, (const char *)rhs);
+} // poeStdCompareWrapper function end
+
+void POE_API
+poeSortTextStd( PoeText *const text, const PoeStringCompareFn compareFn ) {
+  assert(text != NULL);
+  assert(compareFn != NULL);
+
+  qsort_s(text->strings, text->stringCount, sizeof(char *), poeStdCompareWrapper, (void *)compareFn);
+} // poeSortTextStd function end
+
 // poe_sort.c file end

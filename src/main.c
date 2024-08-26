@@ -15,7 +15,7 @@ main( void ) {
   PoeText text = {0};
   FILE *f;
 
-  fopen_s(&f, "test/1984.txt", "r");
+  fopen_s(&f, "test/onegin.txt", "r");
   assert(f != NULL);
   cond = poeParseText(f, &text);
   fclose(f);
@@ -29,7 +29,7 @@ main( void ) {
   poeWriteText(f, &text);
   poeSortText(&text, poeCompareFromEnd);
   poeWriteText(f, &text);
-  poeSortText(&text, poeCompareFromStart);
+  poeSortText(&text, poeCompareInitialOrder);
   poeWriteText(f, &text);
 
   fclose(f);
