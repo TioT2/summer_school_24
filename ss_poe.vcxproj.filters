@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Dynaimc array">
+      <UniqueIdentifier>{8a53f8a7-93e5-4388-9fde-f8187e3613e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Poem processor">
+      <UniqueIdentifier>{bf246eea-8aaa-4fde-b036-304d52a21118}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\darr\darr.c">
+      <Filter>Source Files\Dynaimc array</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\poe\poe.c">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\poe\poe_sort.c">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\poe\poe_compare.c">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\darr\darr.h">
+      <Filter>Source Files\Dynaimc array</Filter>
+    </ClInclude>
+    <ClInclude Include="src\poe\poe.h">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
