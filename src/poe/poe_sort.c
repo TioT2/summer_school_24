@@ -11,25 +11,26 @@
  * @return partition index
  */
 static size_t
-poeTextQsortPartition( const char **array, const size_t begin, const size_t end, const PoeStringCompareFn compareFn ) {
-  const char *pivot = array[(begin + end) / 2];
+poeTextQsortPartition( PoeString *const array, const size_t begin, const size_t end, const PoeStringCompareFn compareFn ) {
+  const PoeString pivot = array[(begin + end) / 2];
+  PoeString tmp;
 
   size_t i = begin;
   size_t j = end;
 
   while (POE_TRUE) {
-    while (compareFn(array[i], pivot) == POE_ORDERING_LESS)
+    while (compareFn(array + i, &pivot) == POE_ORDERING_LESS)
       i++;
 
-    while (compareFn(array[j], pivot) == POE_ORDERING_MORE)
+    while (compareFn(array + j, &pivot) == POE_ORDERING_MORE)
       j--;
 
     if (i >= j)
       return j;
 
-    const char *const tmp = array[i];
-    array[i] = array[j];
-    array[j] = tmp;
+    memcpy(&tmp     , array + i, sizeof(PoeString));
+    memcpy(array + i, array + j, sizeof(PoeString));
+    memcpy(array + j, &tmp     , sizeof(PoeString));
 
     i++;
     j--;
@@ -45,9 +46,10 @@ poeTextQsortPartition( const char **array, const size_t begin, const size_t end,
  * @param compareFn compare function
  */
 static void
-poeTextQsort( const char **arr, size_t begin, size_t end, const PoeStringCompareFn compareFn ) {
+poeTextQsort( PoeString *const arr, const size_t begin, const size_t end, const PoeStringCompareFn compareFn ) {
   if (begin < end) {
-    size_t partition = poeTextQsortPartition(arr, begin, end, compareFn);
+    const size_t partition = poeTextQsortPartition(arr, begin, end, compareFn);
+
     poeTextQsort(arr, begin, partition, compareFn);
     poeTextQsort(arr, partition + 1, end, compareFn);
   }
@@ -74,7 +76,7 @@ poeSortText( PoeText *const text, const PoeStringCompareFn compareFn ) {
  */
 static int __cdecl
 poeStdCompareWrapper( void *compareFn, const void *lhs, const void *rhs ) {
-  return ((PoeStringCompareFn)compareFn)((const char *)lhs, (const char *)rhs);
+  return ((PoeStringCompareFn)compareFn)((const PoeString *)lhs, (const PoeString *)rhs);
 } // poeStdCompareWrapper function end
 
 void POE_API
@@ -82,7 +84,7 @@ poeSortTextStd( PoeText *const text, const PoeStringCompareFn compareFn ) {
   assert(text != NULL);
   assert(compareFn != NULL);
 
-  qsort_s(text->strings, text->stringCount, sizeof(char *), poeStdCompareWrapper, (void *)compareFn);
+  qsort_s(text->strings, text->stringCount, sizeof(PoeString), poeStdCompareWrapper, (void *)compareFn);
 } // poeSortTextStd function end
 
 // poe_sort.c file end

@@ -89,4 +89,18 @@ void darrDestroy( void *array ) {
   free((DarrHeader *)array - 1);
 }
 
+void * darrPush( void *array, const void *elementPtr ) {
+  assert(array != NULL);
+  assert(elementPtr != NULL);
+
+  if ((array = darrReserve(array, 1)) == NULL)
+    return NULL;
+
+  DarrHeader *const header = (DarrHeader *)array - 1;
+
+  memcpy((unsigned char *)(header + 1) + (header->size - 1) * header->elementSize, elementPtr, header->elementSize);
+
+  return header + 1;
+}
+
 // darr.c file end

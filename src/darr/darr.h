@@ -9,6 +9,8 @@ void * _darrCreate( size_t elementSize, size_t initialSize );
 
 #define darrCreate(type, initialSize) ((type *)_darrCreate(sizeof(type), (initialSize)))
 
+void * darrPush( void *array, const void *elementPtr );
+
 void * darrReserve( void *array, size_t elementCount );
 
 void * darrTruncCapacity( void *array );

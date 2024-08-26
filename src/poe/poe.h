@@ -45,11 +45,16 @@ inline PoeOrdering poeCompareSize( const size_t lhs, const size_t rhs ) {
       : POE_ORDERING_EQUAL;
 } // poeCompareSize function end
 
+typedef struct __PoeString {
+  char *first; // first character pointer
+  char *last;  // last character pointer
+} PoeString;
+
 /// Text representation structure
 typedef struct __PoeText {
-  char *  stringBuffer; ///< string bulk allocation
-  char ** strings;      ///< text string pointer
-  size_t  stringCount;  ///< count of text strings
+  char      * stringBuffer; ///< string bulk allocation
+  PoeString * strings;      ///< text string pointer
+  size_t      stringCount;  ///< count of text strings
 } PoeText;
 
 /**
@@ -81,6 +86,15 @@ void POE_API
 poeDestroyText( PoeText *const text );
 
 /**
+ * @brief text shuffle function
+ * 
+ * @param text             text to shuffle
+ * @param permutationCount count of permutations to perform
+ */
+void POE_API
+poeShuffleText( PoeText *const text, size_t permutationCount );
+
+/**
  * @brief string compare function pointer definition
  * 
  * @param lhs first string
@@ -91,7 +105,7 @@ poeDestroyText( PoeText *const text );
  * @return lhs and rhs element ordering
  */
 typedef PoeOrdering
-(POE_API * PoeStringCompareFn)( const char *lhs, const char *rhs );
+(POE_API * PoeStringCompareFn)( const PoeString *lhs, const PoeString *rhs );
 
 /**
  * @brief text sorting function
@@ -99,7 +113,7 @@ typedef PoeOrdering
  * @param compareFn compare function
  */
 void POE_API
-poeSortText( PoeText *const text, const PoeStringCompareFn compareFn );
+poeSortText( PoeText *text, const PoeStringCompareFn compareFn );
 
 /**
  * @brief text by standard qsort_s sorting function
@@ -107,7 +121,7 @@ poeSortText( PoeText *const text, const PoeStringCompareFn compareFn );
  * @param compareFn compare function
  */
 void POE_API
-poeSortTextStd( PoeText *const text, const PoeStringCompareFn compareFn );
+poeSortTextStd( PoeText *text, const PoeStringCompareFn compareFn );
 
 /***
  * compare functions (group PoeStringCompareFunctions)
@@ -123,7 +137,7 @@ poeSortTextStd( PoeText *const text, const PoeStringCompareFn compareFn );
  * @return ordering
  */
 PoeOrdering POE_API
-poeCompareInitialOrder( const char *lhs, const char *rhs );
+poeCompareInitialOrder( const PoeString *lhs, const PoeString *rhs );
 
 /**
  * @brief from begin to end comparing function
@@ -135,7 +149,7 @@ poeCompareInitialOrder( const char *lhs, const char *rhs );
  * @return ordering
  */
 PoeOrdering POE_API
-poeCompareFromStart( const char *lhs, const char *rhs );
+poeCompareFromStart( const PoeString *lhs, const PoeString *rhs );
 
 /**
  * @brief from end to begin comparing function
@@ -147,7 +161,7 @@ poeCompareFromStart( const char *lhs, const char *rhs );
  * @return ordering
  */
 PoeOrdering POE_API
-poeCompareFromEnd( const char *lhs, const char *rhs );
+poeCompareFromEnd( const PoeString *lhs, const PoeString *rhs );
 
 #endif // !defined(POE_H_)
 

@@ -1,8 +1,8 @@
 #include "poe.h"
 
 PoeOrdering POE_API
-poeCompareInitialOrder( const char *lhs, const char *rhs ) {
-  return poeCompareSize((size_t)lhs, (size_t)rhs);
+poeCompareInitialOrder( const PoeString *lhs, const PoeString *rhs ) {
+  return poeCompareSize((size_t)lhs->first, (size_t)rhs->first);
 } // poeCompareInitialOrder function end
 
 /**
@@ -72,7 +72,7 @@ static struct __PoeResultOf_poeCompareFromStartHelper {
   const char *  ptr; /// pointer
   unsigned char c;   /// character
 }
-poeCompareFromStartHelper( const char *hs ) {
+poeCompareFromStartHelper( const char *const hs ) {
   struct __PoeResultOf_poeCompareFromStartHelper res = {
     .ptr = hs,
     .c = *hs,
@@ -86,13 +86,13 @@ poeCompareFromStartHelper( const char *hs ) {
 } // poeCompareFromStartHelper function end
 
 PoeOrdering POE_API
-poeCompareFromStart( const char *const lhs, const char *const rhs ) {
+poeCompareFromStart( const PoeString *const lhs, const PoeString *const rhs ) {
   assert(lhs != NULL);
   assert(rhs != NULL);
 
   struct __PoeResultOf_poeCompareFromStartHelper
-    left  = { .ptr = lhs },
-    right = { .ptr = rhs };
+    left  = { .ptr = lhs->first },
+    right = { .ptr = rhs->first };
 
   while (POE_TRUE) {
     // function
@@ -107,7 +107,10 @@ poeCompareFromStart( const char *const lhs, const char *const rhs ) {
     right.ptr++;
   }
 
-  return poeCompareSize((unsigned char)*left.ptr, (unsigned char)*right.ptr);
+  return poeCompareSize(
+    (unsigned char)poeCompareProcessCharacter(*left.ptr),
+    (unsigned char)poeCompareProcessCharacter(*right.ptr)
+  );
 } // poeCompareFromStart function end
 
 /**
@@ -121,27 +124,27 @@ static struct __PoeResultOf_poeCompareFromEndHelper {
   const char *  ptr; /// pointer
   unsigned char c;   /// character
 }
-poeCompareFromEndHelper( const char *hs ) {
+poeCompareFromEndHelper( const char *const hs ) {
   struct __PoeResultOf_poeCompareFromEndHelper res = {
     .ptr = hs,
     .c = *hs,
   };
 
   while (res.c != '\0' && !poeCompareCheckCharacterComparability(res.c))
-    res.c = *--hs;
+    res.c = *--res.ptr;
   res.c = poeCompareProcessCharacter(res.c);
 
   return res;
 } // poeCompareFromEndHelper function end
 
 PoeOrdering POE_API
-poeCompareFromEnd( const char *const lhs, const char *const rhs ) {
+poeCompareFromEnd( const PoeString *const lhs, const PoeString *const rhs ) {
   assert(lhs != NULL);
   assert(rhs != NULL);
 
   struct __PoeResultOf_poeCompareFromEndHelper
-    left  = { .ptr = lhs + strlen(lhs) - 1 },
-    right = { .ptr = rhs + strlen(rhs) - 1 };
+    left  = { .ptr = lhs->last, },
+    right = { .ptr = rhs->last, };
 
   while (POE_TRUE) {
     // function
@@ -156,7 +159,10 @@ poeCompareFromEnd( const char *const lhs, const char *const rhs ) {
     right.ptr--;
   }
 
-  return poeCompareSize((unsigned char)*left.ptr, (unsigned char)*right.ptr);
+  return poeCompareSize(
+    (unsigned char)poeCompareProcessCharacter(*left.ptr),
+    (unsigned char)poeCompareProcessCharacter(*right.ptr)
+  );
 } // poeCompareFromEnd function end
 
 // poe_compare.c file end

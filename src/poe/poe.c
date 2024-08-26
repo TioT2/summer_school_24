@@ -27,10 +27,15 @@ poeParseText( FILE *const file, PoeText *const dst ) {
   stringBuffer[0] = '\0';
 
   while (fgets(buffer, bufferLength, file) != NULL) {
-    size_t bufferReadSize = strlen(buffer);
+    const size_t bufferReadSize = strlen(buffer);
 
     if (bufferReadSize > 0)
       buffer[bufferReadSize - 1] = '\0';
+
+    if ((stringIndexBuffer = darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
+      darrDestroy(stringBuffer);
+      return POE_FALSE;
+    }
 
     stringBuffer = darrReserve(stringBuffer, bufferReadSize);
 
@@ -39,19 +44,15 @@ poeParseText( FILE *const file, PoeText *const dst ) {
       return POE_FALSE;
     }
 
-    stringIndexBuffer = darrReserve(stringIndexBuffer, 1);
-
-    if (stringIndexBuffer == NULL) {
-      darrDestroy(stringBuffer);
-      return POE_FALSE;
-    }
-
     memcpy(stringBuffer + stringBufferNext, buffer, bufferReadSize);
-
-    stringIndexBuffer[stringCount] = stringBufferNext;
 
     stringCount += 1;
     stringBufferNext += bufferReadSize;
+  }
+
+  if ((stringIndexBuffer = darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
+    darrDestroy(stringBuffer);
+    return POE_FALSE;
   }
 
   stringBuffer = darrToArray(stringBuffer);
@@ -61,7 +62,7 @@ poeParseText( FILE *const file, PoeText *const dst ) {
     return POE_FALSE;
   }
 
-  const char **strings = calloc(stringCount, sizeof(char *));
+  PoeString *strings = calloc(stringCount, sizeof(PoeString));
 
   if (strings == NULL) {
     darrDestroy(stringIndexBuffer);
@@ -69,8 +70,10 @@ poeParseText( FILE *const file, PoeText *const dst ) {
     return POE_FALSE;
   }
 
-  for (size_t i = 0; i < stringCount; i++)
-    strings[i] = stringBuffer + stringIndexBuffer[i];
+  for (size_t i = 0; i < stringCount; i++) {
+    strings[i].first = stringBuffer + stringIndexBuffer[i];
+    strings[i].last = stringBuffer + stringIndexBuffer[i + 1] - 2;
+  }
   darrDestroy(stringIndexBuffer);
 
   dst->stringBuffer = stringBuffer;
@@ -94,9 +97,23 @@ poeWriteText( FILE *const file, const PoeText *const text ) {
   assert(text != NULL);
 
   for (size_t i = 0; i < text->stringCount; i++) {
-    fputs(text->strings[i], file);
+    fputs(text->strings[i].first, file);
     fputc('\n', file);
   }
 } // poeWriteText function end
+
+void POE_API
+poeShuffleText( PoeText *const text, const size_t permutationCount ) {
+  PoeString s;
+
+  for (size_t i = 0; i < permutationCount; i++) {
+    size_t ia = ((long)rand() + ((long)rand() << 16)) % text->stringCount;
+    size_t ib = ((long)rand() + ((long)rand() << 16)) % text->stringCount;
+
+    memcpy(&s                , text->strings + ia, sizeof(PoeString));
+    memcpy(text->strings + ia, text->strings + ib, sizeof(PoeString));
+    memcpy(text->strings + ib, &s                , sizeof(PoeString));
+  }
+} // poeShuffleText function end
 
 // file poe.c
