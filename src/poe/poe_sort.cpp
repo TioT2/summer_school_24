@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_sort.cpp
+ * @author tiot2
+ * @brief  Poem processor text sort implementation module
+ */
+
 #include "poe.h"
 
 /**

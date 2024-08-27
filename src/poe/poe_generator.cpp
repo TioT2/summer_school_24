@@ -1,5 +1,10 @@
-#include "poe_generator.h"
+/**
+ * @file   poe/poe_generator.cpp
+ * @author tiot2
+ * @brief  Poem processor text generator implementation module
+ */
 
+#include "poe_generator.h"
 
 /// TODO replace linear search with binary one.
 
@@ -27,7 +32,7 @@ poeGeneratorGetStringLastCharacters( const PoeString *const string ) {
   return *(uint32_t *)buffer;
 } // poeGeneratorGetStringLastCharacters function end
 
-/// Statistics entry representation structure
+/// statistics entry representation structure
 typedef struct __PoeEndingStatEntry {
   uint32_t last;  ///< last characters
   size_t   count; ///< count of strnigs

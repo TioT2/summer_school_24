@@ -1,3 +1,9 @@
+/**
+ * @file   main.cpp
+ * @author tiot2
+ * @brief  Project main module
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +19,10 @@
  * @return count of characters written
  */
 size_t
-cliGetString( char *const buffer, const size_t bufferSize ) {
+cliGetString(
+  char *const buffer,
+  const size_t bufferSize
+) {
   assert(buffer != NULL);
 
   char *bptr = buffer;
@@ -38,7 +47,7 @@ cliGetString( char *const buffer, const size_t bufferSize ) {
  */
 int
 main( void ) {
-  // setup time
+  // little setup
   srand((unsigned int)time(NULL));
   system("chcp 1251");
   system("cls");
@@ -47,18 +56,30 @@ main( void ) {
   PoeBool textIsInit = POE_FALSE;
   PoeGenerator generator = {0};
   PoeBool generatorIsInit = POE_FALSE;
+  FILE *file = NULL;
 
-  FILE *file;
-
-  const char *commandLoad = "load";
-  const char *commandGenStanza = "stanza";
-  const char *commandHelp = "help";
-  const char *commandSort = "sort";
-  const char *commandSortInitial = "initial";
-  const char *commandSortForward = "forward";
-  const char *commandSortReverse = "reverse";
-  const char *commandWrite = "write";
-  const char *commandQuit = "quit";
+  static const struct {
+    const char
+      *load       ,
+      *genStanza  ,
+      *help       ,
+      *sort       ,
+      *sortInitial,
+      *sortForward,
+      *sortReverse,
+      *write      ,
+      *quit       ;
+  } command = {
+    .load        = "load",
+    .genStanza   = "stanza",
+    .help        = "help",
+    .sort        = "sort",
+    .sortInitial = "initial",
+    .sortForward = "forward",
+    .sortReverse = "reverse",
+    .write       = "write",
+    .quit        = "quit",
+  };
 
   char buffer[512] = {0};
 
@@ -69,34 +90,35 @@ main( void ) {
 
     cliGetString(buffer, sizeof(buffer));
 
+    // check if command should be executed in cmd
     if (buffer[0] == '!') {
       system(buffer + 1);
       continue;
     }
 
-    const char *next = "";
+    const char *commandData = "";
 
-    // find second command part
+    // split command and next part
     {
       char *n = strchr(buffer, ' ');
 
       if (n != NULL) {
         *n = '\0';
-        next = n + 1;
+        commandData = n + 1;
       }
     }
 
-    if (strcmp(buffer, commandLoad) == 0) {
+    if (strcmp(buffer, command.load) == 0) {
       if (generatorIsInit) {
         // generator deinitialization
         poeDestroyGenerator(&generator);
         generatorIsInit = POE_FALSE;
       }
 
-      fopen_s(&file, next, "r");
+      fopen_s(&file, commandData, "r");
 
       if (file == NULL) {
-        printf("    can't open file \'%s\'\n", next);
+        printf("    can't open file \'%s\'\n", commandData);
         continue;
       }
 
@@ -110,19 +132,19 @@ main( void ) {
       continue;
     }
 
-    if (strcmp(buffer, commandHelp) == 0) {
-      printf("    load file              %s <file name>\n", commandLoad);
-      printf("    generate stanza        %s\n", commandGenStanza);
-      printf("    sort with comparator   %s <\'%s\'|\'%s\'|\'%s\'>\n", commandSort, commandSortInitial, commandSortForward, commandSortReverse);
-      printf("    write to file          %s <file name>\n", commandWrite);
+    if (strcmp(buffer, command.help) == 0) {
+      printf("    load file              %s <file name>\n", command.load);
+      printf("    generate stanza        %s\n", command.genStanza);
+      printf("    sort with comparator   %s <\'%s\'|\'%s\'|\'%s\'>\n", command.sort, command.sortInitial, command.sortForward, command.sortReverse);
+      printf("    write to file          %s <file name>\n", command.write);
       printf("\n");
-      printf("    show this menu         %s\n", commandHelp);
-      printf("    quit from program      %s\n", commandQuit);
+      printf("    show this menu         %s\n", command.help);
+      printf("    quit from program      %s\n", command.quit);
       printf("    execute cmd command    !<command>\n");
       continue;
     }
 
-    if (strcmp(buffer, commandGenStanza) == 0) {
+    if (strcmp(buffer, command.genStanza) == 0) {
       if (!textIsInit) {
         printf("    no text to generate stanza from\n");
         continue;
@@ -146,7 +168,7 @@ main( void ) {
       continue;
     }
 
-    if (strcmp(buffer, commandSort) == 0) {
+    if (strcmp(buffer, command.sort) == 0) {
       if (!textIsInit) {
         printf("    no text to write\n");
         continue;
@@ -157,14 +179,14 @@ main( void ) {
 
       PoeStringCompareFn compareFn = NULL;
 
-      if (strcmp(next, commandSortForward) == 0) {
+      if (strcmp(commandData, command.sortForward) == 0) {
         compareFn = poeCompareFromStart;
-      } else if (strcmp(next, commandSortReverse) == 0) {
+      } else if (strcmp(commandData, command.sortReverse) == 0) {
         compareFn = poeCompareFromEnd;
-      } else if (strcmp(next, commandSortInitial) == 0) {
+      } else if (strcmp(commandData, command.sortInitial) == 0) {
         compareFn = poeCompareInitialOrder;
       } else {
-        printf("    unknown sorting method: \'%s\'\n", next);
+        printf("    unknown sorting method: \'%s\'\n", commandData);
         continue;
       }
 
@@ -172,16 +194,16 @@ main( void ) {
       continue;
     }
 
-    if (strcmp(buffer, commandWrite) == 0) {
+    if (strcmp(buffer, command.write) == 0) {
       if (!textIsInit) {
         printf("    no text to write\n");
         continue;
       }
 
-      fopen_s(&file, next, "w");
+      fopen_s(&file, commandData, "w");
 
       if (file == NULL) {
-        printf("    can't open \'%s\' file for text write\n", next);
+        printf("    can't open \'%s\' file for text write\n", commandData);
         continue;
       }
 
@@ -191,7 +213,7 @@ main( void ) {
       continue;
     }
 
-    if (strcmp(buffer, commandQuit) == 0) {
+    if (strcmp(buffer, command.quit) == 0) {
       doContinue = POE_FALSE;
       continue;
     }

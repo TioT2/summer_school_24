@@ -1,3 +1,9 @@
+/**
+ * @file   darr/darr.cpp
+ * @author tiot2
+ * @brief  Dynamic array implementation file
+ */
+
 #include "darr.h"
 
 /// Dynamic array header representation structure
@@ -114,4 +120,4 @@ darrPush( void *array, const void *elementPtr ) {
   return header + 1;
 } // darrPush function end
 
-// darr.c file end
+// darr.cpp file end

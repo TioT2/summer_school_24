@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_core.h
+ * @author tiot2
+ * @brief  Poem processor core declaration module
+ */
+
 #ifndef POE_CORE_H_
 #define POE_CORE_H_
 
@@ -9,26 +15,28 @@
 #include <stdint.h>
 #include <time.h>
 
+// dynamic array
 #include <darr/darr.h>
 
-/// Boolean type
+/// boolean type
 typedef int PoeBool;
 
-/// TRUE
+/// true definition
 #define POE_TRUE 1
 
-/// FALSE
+/// false definition
 #define POE_FALSE 0
 
-/// Calling convention
+/// calling convention
 #define POE_API __cdecl
 
+/// string representation structure
 typedef struct __PoeString {
-  char *first; // first character pointer
-  char *last;  // last character pointer
+  char *first; ///< first character pointer
+  char *last;  ///< last character pointer
 } PoeString;
 
-/// Text representation structure
+/// text representation structure
 typedef struct __PoeText {
   char      * stringBuffer; ///< string bulk allocation
   PoeString * strings;      ///< text string pointer
@@ -36,7 +44,7 @@ typedef struct __PoeText {
 } PoeText;
 
 /**
- * @brief Text parsing function
+ * @brief text parsing function
  * 
  * @param file    file with text data
  * @param dstText parsed text
@@ -47,7 +55,7 @@ PoeBool POE_API
 poeParseText( FILE *const file, PoeText *const dst );
 
 /**
- * @brief Text writing function
+ * @brief text writing function
  * 
  * @param file file to write text to
  * @param text text to write

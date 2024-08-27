@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_sort.h
+ * @author tiot2
+ * @brief  Poem processor text sort declaration module
+ */
+
 #ifndef POE_SORT_H_
 #define POE_SORT_H_
 
@@ -6,6 +12,7 @@
 
 /**
  * @brief text sorting function
+ * 
  * @param text      text to sort
  * @param compareFn compare function
  */
@@ -14,6 +21,7 @@ poeSortText( PoeText *text, const PoeStringCompareFn compareFn );
 
 /**
  * @brief text by standard qsort_s sorting function
+ * 
  * @param text      text to sort
  * @param compareFn compare function
  */

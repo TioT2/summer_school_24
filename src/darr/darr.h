@@ -1,3 +1,9 @@
+/**
+ * @file   darr/darr.h
+ * @author tiot2
+ * @brief  Dynamic array declaration file
+ */
+
 #ifndef DARR_H_
 #define DARR_H_
 
@@ -61,7 +67,7 @@ void * DARR_API
 darrTruncCapacity( void *array );
 
 /**
- * @brief dynamic to ordinary array (ok to free by 'free(arr)' call) transform function
+ * @brief dynamic to ordinary array (ok to free by 'free(array)' call) transform function
  * 
  * @param array dynamic array to transform
  * 

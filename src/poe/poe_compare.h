@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_compare.h
+ * @author tiot2
+ * @brief  Poem processor comparator declaration module
+ */
+
 #ifndef POE_COMPARE_H_
 #define POE_COMPARE_H_
 
@@ -17,8 +23,10 @@ typedef enum __PoeOrdering {
 
 /**
  * @brief the most basic integer type comparing function
+ * 
  * @param lhs left hand side
  * @param rhs right hand side
+ * 
  * @return ordering
  */
 inline PoeOrdering POE_API
@@ -112,3 +120,5 @@ PoeOrdering POE_API
 poeCompareFromEnd( const PoeString *lhs, const PoeString *rhs );
 
 #endif // !defined(POE_COPMARE_H_)
+
+// poe_compare.h file end

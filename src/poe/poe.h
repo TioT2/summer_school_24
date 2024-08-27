@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe.h
+ * @author tiot2
+ * @brief  Poem processor main declaration module
+ */
+
 #ifndef POE_H_
 #define POE_H_
 

@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_compare.cpp
+ * @author tiot2
+ * @brief  Poem processor comparator implementation module
+ */
+
 #include "poe.h"
 
 PoeOrdering POE_API
@@ -149,4 +155,4 @@ poeCompareFromEnd( const PoeString *const lhs, const PoeString *const rhs ) {
   );
 } // poeCompareFromEnd function end
 
-// poe_compare.c file end
+// poe_compare.cpp file end

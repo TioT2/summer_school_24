@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_core.cpp
+ * @author tiot2
+ * @brief  Poem processor core implementation module
+ */
+
 #include "poe.h"
 
 PoeBool POE_API
@@ -114,4 +120,4 @@ poeShuffleText( PoeText *const text, const size_t permutationCount ) {
   }
 } // poeShuffleText function end
 
-// file poe_core.c
+// poe_core.cpp file end

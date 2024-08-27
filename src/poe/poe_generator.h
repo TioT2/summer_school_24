@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_generator.h
+ * @author tiot2
+ * @brief  Poem processor text generator declaration module
+ */
+
 #ifndef POE_GENERATOR_H_
 #define POE_GENERATOR_H_
 
