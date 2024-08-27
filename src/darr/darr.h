@@ -19,6 +19,16 @@ void * DARR_API
 darrCreate( size_t elementSize, size_t initialSize );
 
 /**
+ * @brief array size getting function
+ * 
+ * @param array array to get size of
+ * 
+ * @return array size
+ */
+size_t DARR_API
+darrGetSize( const void *array );
+
+/**
  * @brief element to array pushing function (extends array by 1 element)
  * 
  * @param array      array to push value to

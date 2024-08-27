@@ -6,6 +6,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <stdint.h>
+
+#include <darr/darr.h>
 
 /// Boolean type
 typedef int PoeBool;

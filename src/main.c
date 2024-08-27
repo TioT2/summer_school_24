@@ -21,6 +21,21 @@ main( void ) {
   fclose(f);
   assert(cond);
 
+  {
+    PoeGenerator generator = {0};
+
+    cond = poeGeneratorCreate(&text, &generator);
+    assert(cond);
+
+    fopen_s(&f, "test_out/gen.txt", "w");
+    assert(f != NULL);
+    poeGeneratorPrint(f, &generator);
+    fclose(f);
+
+    poeGeneratorDestroy(&generator);
+    poeDestroyText(&text);
+    return;
+  }
 
   fopen_s(&f, "test_out/out.txt", "w");
 

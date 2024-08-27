@@ -6,16 +6,17 @@
 
 /// line end representation structure
 typedef struct __PoeEnding {
-  PoeString * stringEnds;     ///< list of strings with this very ending
-  size_t      stringEndCount; ///< count of string ends
-  char        last[3];        ///< last characters
+  uint32_t     last;        ///< last characters, preprocessed and compressed in string
+  PoeString ** strings;     ///< list of indices of strings with this ending
+  size_t       stringCount; ///< count of string endings
 } PoeEnding;
 
 /// poem generator representation structure
 typedef struct __PoeGenerator {
-  const PoeText   * text;         ///< text
-  PoeString       * stringBuffer; ///< pool of allocated strings
-  PoeEnding       * endingPool;   ///< set of strings, qualified by ending
+  const PoeText   * text;        ///< text
+  PoeString      ** stringPool;  ///< string pool
+  PoeEnding       * endings;     ///< set of strings, qualified by ending
+  size_t            endingCount; ///< count of endings
 } PoeGenerator;
 
 /**
@@ -27,7 +28,7 @@ typedef struct __PoeGenerator {
  * @return POE_TRUE if initialization succeeded, POE_FALSE otherwise
  */
 PoeBool POE_API
-poeGeneartorCreate(
+poeGeneratorCreate(
   const PoeText *const text,
   PoeGenerator *const generator
 );
@@ -40,6 +41,18 @@ poeGeneartorCreate(
 void POE_API
 poeGeneratorDestroy(
   PoeGenerator *const generator
+);
+
+/**
+ * @brief endings display function
+ * 
+ * @param file      ending file
+ * @param generator ending generator
+ */
+void POE_API
+poeGeneratorPrint(
+  FILE *const file,
+  const PoeGenerator *const generator
 );
 
 #endif // !defined(POE_GENERATOR_H_)

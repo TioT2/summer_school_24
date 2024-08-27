@@ -29,6 +29,10 @@ darrCreate( size_t elementSize, size_t initialSize ) {
   return header + 1;
 } // darrCreate function end
 
+size_t DARR_API
+darrGetSize( const void *array ) {
+  return ((const DarrHeader *)array - 1)->size;
+} // darrGetSize function end
 
 void * DARR_API
 darrReserve( void *array, size_t elementCount ) {

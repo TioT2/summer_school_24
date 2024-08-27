@@ -1,7 +1,5 @@
 #include "poe.h"
 
-#include "darr/darr.h"
-
 PoeBool POE_API
 poeParseText( FILE *const file, PoeText *const dst ) {
   assert(file != NULL);
