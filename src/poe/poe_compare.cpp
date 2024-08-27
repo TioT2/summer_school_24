@@ -59,7 +59,7 @@ static struct __PoeResultOf_poeCompareFromStartHelper {
 poeCompareFromStartHelper( const char *const hs ) {
   struct __PoeResultOf_poeCompareFromStartHelper res = {
     .ptr = hs,
-    .c = *hs,
+    .c = (unsigned char)*hs,
   };
 
   while (res.c != '\0' && !poeCompareCheckCharacterComparability(res.c))
@@ -111,7 +111,7 @@ static struct __PoeResultOf_poeCompareFromEndHelper {
 poeCompareFromEndHelper( const char *const hs ) {
   struct __PoeResultOf_poeCompareFromEndHelper res = {
     .ptr = hs,
-    .c = *hs,
+    .c = (unsigned char)*hs,
   };
 
   while (res.c != '\0' && !poeCompareCheckCharacterComparability(res.c))

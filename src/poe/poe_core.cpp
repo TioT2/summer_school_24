@@ -8,11 +8,11 @@ poeParseText( FILE *const file, PoeText *const dst ) {
   char buffer[2048] = {0};
   const int bufferLength = 2048;
 
-  char *stringBuffer = darrCreate(sizeof(char), 1);
+  char *stringBuffer = (char *)darrCreate(sizeof(char), 1);
   if (stringBuffer == NULL)
     return POE_FALSE;
 
-  size_t *stringIndexBuffer = darrCreate(sizeof(size_t), 0);
+  size_t *stringIndexBuffer = (size_t *)darrCreate(sizeof(size_t), 0);
   if (stringIndexBuffer == NULL) {
     darrDestroy(stringBuffer);
     return POE_FALSE;
@@ -30,12 +30,12 @@ poeParseText( FILE *const file, PoeText *const dst ) {
     if (bufferReadSize > 0)
       buffer[bufferReadSize - 1] = '\0';
 
-    if ((stringIndexBuffer = darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
+    if ((stringIndexBuffer = (size_t *)darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
       darrDestroy(stringBuffer);
       return POE_FALSE;
     }
 
-    stringBuffer = darrReserve(stringBuffer, bufferReadSize);
+    stringBuffer = (char *)darrReserve(stringBuffer, bufferReadSize);
 
     if (stringBuffer == NULL) {
       darrDestroy(stringIndexBuffer);
@@ -48,19 +48,19 @@ poeParseText( FILE *const file, PoeText *const dst ) {
     stringBufferNext += bufferReadSize;
   }
 
-  if ((stringIndexBuffer = darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
+  if ((stringIndexBuffer = (size_t *)darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
     darrDestroy(stringBuffer);
     return POE_FALSE;
   }
 
-  stringBuffer = darrToArray(stringBuffer);
+  stringBuffer = (char *)darrToArray(stringBuffer);
 
   if (stringBuffer == NULL) {
     darrDestroy(stringIndexBuffer);
     return POE_FALSE;
   }
 
-  PoeString *strings = calloc(stringCount, sizeof(PoeString));
+  PoeString *strings = (PoeString *)calloc(stringCount, sizeof(PoeString));
 
   if (strings == NULL) {
     darrDestroy(stringIndexBuffer);

@@ -28,7 +28,7 @@ typedef struct __PoeGenerator {
  * @return POE_TRUE if initialization succeeded, POE_FALSE otherwise
  */
 PoeBool POE_API
-poeGeneratorCreate(
+poeCreateGenerator(
   const PoeText *const text,
   PoeGenerator *const generator
 );
@@ -39,7 +39,7 @@ poeGeneratorCreate(
  * @param generator generator to deinitialize
  */
 void POE_API
-poeGeneratorDestroy(
+poeDestroyGenerator(
   PoeGenerator *const generator
 );
 

@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\darr\darr.c" />
-    <ClCompile Include="src\main.c" />
-    <ClCompile Include="src\poe\poe_core.c" />
-    <ClCompile Include="src\poe\poe_compare.c" />
-    <ClCompile Include="src\poe\poe_generator.c" />
-    <ClCompile Include="src\poe\poe_sort.c" />
+    <ClCompile Include="src\darr\darr.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\poe\poe_core.cpp" />
+    <ClCompile Include="src\poe\poe_compare.cpp" />
+    <ClCompile Include="src\poe\poe_generator.cpp" />
+    <ClCompile Include="src\poe\poe_sort.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\darr\darr.h" />
@@ -110,6 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>.\src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +127,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>.\src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +144,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>.\src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,6 +161,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>.\src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

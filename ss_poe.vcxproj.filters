@@ -21,22 +21,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\darr\darr.c">
+    <ClCompile Include="src\darr\darr.cpp">
       <Filter>Source Files\Dynaimc array</Filter>
     </ClCompile>
-    <ClCompile Include="src\main.c">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\poe\poe_core.c">
+    <ClCompile Include="src\poe\poe_core.cpp">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
-    <ClCompile Include="src\poe\poe_sort.c">
+    <ClCompile Include="src\poe\poe_sort.cpp">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
-    <ClCompile Include="src\poe\poe_compare.c">
+    <ClCompile Include="src\poe\poe_compare.cpp">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
-    <ClCompile Include="src\poe\poe_generator.c">
+    <ClCompile Include="src\poe\poe_generator.cpp">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
   </ItemGroup>

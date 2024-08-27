@@ -44,7 +44,7 @@ static PoeEndingStatEntry *
 poeGetEndingStat( const PoeText *const text ) {
   assert(text != NULL);
 
-  PoeEndingStatEntry *entries = darrCreate(sizeof(PoeEndingStatEntry), 0);
+  PoeEndingStatEntry *entries = (PoeEndingStatEntry *)darrCreate(sizeof(PoeEndingStatEntry), 0);
   size_t entryCount = 0;
 
   if (entries == NULL)
@@ -69,7 +69,7 @@ poeGetEndingStat( const PoeText *const text ) {
         .count = 1,
       };
 
-      if ((entries = darrPush(entries, &entry)) == NULL)
+      if ((entries = (PoeEndingStatEntry *)darrPush(entries, &entry)) == NULL)
         return NULL;
 
       entryCount++;
@@ -80,7 +80,7 @@ poeGetEndingStat( const PoeText *const text ) {
 } // poeGetEndingStat function end
 
 PoeBool POE_API
-poeGeneratorCreate(
+poeCreateGenerator(
   const PoeText *const text,
   PoeGenerator *const generator
 ) {
@@ -93,13 +93,13 @@ poeGeneratorCreate(
     return POE_FALSE;
   size_t endingCount = darrGetSize(endingStat);
 
-  PoeEnding *endings = calloc(endingCount, sizeof(PoeEnding));
+  PoeEnding *endings = (PoeEnding *)calloc(endingCount, sizeof(PoeEnding));
   if (endings == NULL) {
     darrDestroy(endingStat);
     return POE_FALSE;
   }
 
-  PoeString **stringPool = calloc(text->stringCount, sizeof(PoeString *));
+  PoeString **stringPool = (PoeString **)calloc(text->stringCount, sizeof(PoeString *));
   if (stringPool == NULL) {
     darrDestroy(endingStat);
     free(endings);
@@ -133,7 +133,7 @@ poeGeneratorCreate(
 } // poeGeneratorCreate function end
 
 void POE_API
-poeGeneratorDestroy(
+poeDestroyGenerator(
   PoeGenerator *const generator
 ) {
   assert(generator != NULL);
@@ -214,7 +214,7 @@ poeGenerateOneginStanza( const PoeGenerator *const generator ) {
   for (size_t i = 0; i < sizeof(lines) / sizeof(lines[0]); i++)
     totalLength += lines[i]->last + 2 - lines[i]->first;
 
-  char *buffer = calloc(totalLength, sizeof(char));
+  char *buffer = (char *)calloc(totalLength, sizeof(char));
 
   if (buffer == NULL)
     return NULL;
