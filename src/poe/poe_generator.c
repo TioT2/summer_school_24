@@ -142,6 +142,65 @@ poeGeneratorDestroy(
   free(generator->endings);
 } // poeGeneratorDestroy function end
 
+char * POE_API
+poeGenerateOneginStanza( const PoeGenerator *const generator ) {
+  assert(generator != NULL);
+
+  const PoeEnding * endings[7] = {
+    generator->endings + rand() % generator->endingCount,
+    generator->endings + rand() % generator->endingCount,
+    generator->endings + rand() % generator->endingCount,
+    generator->endings + rand() % generator->endingCount,
+    generator->endings + rand() % generator->endingCount,
+    generator->endings + rand() % generator->endingCount,
+    generator->endings + rand() % generator->endingCount,
+  };
+
+  const PoeString * lines[14] = {
+    endings[0]->strings[rand() % endings[0]->stringCount],
+    endings[1]->strings[rand() % endings[1]->stringCount],
+    endings[0]->strings[rand() % endings[0]->stringCount],
+    endings[1]->strings[rand() % endings[1]->stringCount],
+
+    endings[2]->strings[rand() % endings[2]->stringCount],
+    endings[2]->strings[rand() % endings[2]->stringCount],
+    endings[3]->strings[rand() % endings[3]->stringCount],
+    endings[3]->strings[rand() % endings[3]->stringCount],
+
+    endings[4]->strings[rand() % endings[4]->stringCount],
+    endings[5]->strings[rand() % endings[5]->stringCount],
+    endings[5]->strings[rand() % endings[5]->stringCount],
+    endings[4]->strings[rand() % endings[4]->stringCount],
+
+    endings[6]->strings[rand() % endings[6]->stringCount],
+    endings[6]->strings[rand() % endings[6]->stringCount],
+  };
+
+  size_t totalLength = 0;
+
+  for (size_t i = 0; i < sizeof(lines) / sizeof(lines[0]); i++)
+    totalLength += lines[i]->last + 2 - lines[i]->first;
+
+  char *buffer = calloc(totalLength, sizeof(char));
+
+  if (buffer == NULL)
+    return NULL;
+
+  char *iter = buffer;
+
+  for (size_t i = 0; i < sizeof(lines) / sizeof(lines[0]); i++) {
+    size_t size = lines[i]->last + 1 - lines[i]->first;
+    memcpy(iter, lines[i]->first, size);
+    iter += size;
+
+    *iter++ = '\n';
+  }
+
+  iter[-1] = '\0';
+
+  return buffer;
+} // poeGenerateOneginStanza function end
+
 void POE_API
 poeGeneratorPrint(
   FILE *const file,
@@ -149,11 +208,6 @@ poeGeneratorPrint(
 ) {
   assert(file != NULL);
   assert(generator != NULL);
-
-  union {
-    uint32_t u32;
-    char     arr[5];
-  } last = { .arr = {0} };
 
   for (size_t endingIndex = 0; endingIndex < generator->endingCount; endingIndex++) {
     const PoeEnding *const ending = generator->endings + endingIndex;

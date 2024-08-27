@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <time.h>
 
 #include <darr/darr.h>
 

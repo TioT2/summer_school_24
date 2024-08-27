@@ -11,6 +11,9 @@
  */
 int
 main( void ) {
+  // setup time
+  srand((unsigned int)time(NULL));
+
   PoeBool cond;
   PoeText text = {0};
   FILE *f;
@@ -29,7 +32,16 @@ main( void ) {
 
     fopen_s(&f, "test_out/gen.txt", "w");
     assert(f != NULL);
-    poeGeneratorPrint(f, &generator);
+
+    for (size_t i = 0; i < 5; i++) {
+      char *st = poeGenerateOneginStanza(&generator);
+
+      if (st != NULL) {
+        fprintf(f, "%s\n\n", st);
+        free(st);
+      }
+    }
+
     fclose(f);
 
     poeGeneratorDestroy(&generator);

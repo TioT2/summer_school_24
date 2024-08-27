@@ -44,6 +44,16 @@ poeGeneratorDestroy(
 );
 
 /**
+ * @brief stanza generation function
+ * 
+ * @param generator generator to generate stanza in
+ * 
+ * @return generated stanza as text
+ */
+char * POE_API
+poeGenerateOneginStanza( const PoeGenerator *const generator );
+
+/**
  * @brief endings display function
  * 
  * @param file      ending file
