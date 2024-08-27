@@ -27,7 +27,7 @@
     <ClCompile Include="src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\poe\poe.c">
+    <ClCompile Include="src\poe\poe_core.c">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
     <ClCompile Include="src\poe\poe_sort.c">
@@ -36,12 +36,27 @@
     <ClCompile Include="src\poe\poe_compare.c">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
+    <ClCompile Include="src\poe\poe_generator.c">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\darr\darr.h">
       <Filter>Source Files\Dynaimc array</Filter>
     </ClInclude>
     <ClInclude Include="src\poe\poe.h">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\poe\poe_core.h">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\poe\poe_sort.h">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\poe\poe_generator.h">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\poe\poe_compare.h">
       <Filter>Source Files\Poem processor</Filter>
     </ClInclude>
   </ItemGroup>

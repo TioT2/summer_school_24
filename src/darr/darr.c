@@ -1,12 +1,14 @@
 #include "darr.h"
 
+/// Dynamic array header representation structure
 typedef struct __DarrHeader {
-  size_t elementSize;
-  size_t capacity;
-  size_t size;
+  size_t elementSize; ///< size of single array element
+  size_t capacity;    ///< array maximal size without bytes reallocation
+  size_t size;        ///< array actual size
 } DarrHeader;
 
-void * _darrCreate( size_t elementSize, size_t initialSize ) {
+void * DARR_API
+darrCreate( size_t elementSize, size_t initialSize ) {
   assert(elementSize != 0);
 
   size_t capacity = 1;
@@ -25,10 +27,11 @@ void * _darrCreate( size_t elementSize, size_t initialSize ) {
   header->size = initialSize;
 
   return header + 1;
-}
+} // darrCreate function end
 
 
-void * darrReserve( void *array, size_t elementCount ) {
+void * DARR_API
+darrReserve( void *array, size_t elementCount ) {
   assert(array != NULL);
 
   DarrHeader *header = (DarrHeader *)array - 1;
@@ -46,9 +49,10 @@ void * darrReserve( void *array, size_t elementCount ) {
     return NULL;
 
   return header + 1;
-}
+} // darrReserve function end
 
-void * darrTruncCapacity( void *array ) {
+void * DARR_API
+darrTruncCapacity( void *array ) {
   assert(array != NULL);
 
   DarrHeader *header = (DarrHeader *)array - 1;
@@ -64,9 +68,10 @@ void * darrTruncCapacity( void *array ) {
   header->capacity = header->size;
 
   return header + 1;
-}
+} // darrTruncCapacity function end
 
-void * darrToArray( void *array ) {
+void * DARR_API
+darrToArray( void *array ) {
   assert(array != NULL);
 
   DarrHeader *header = (DarrHeader *)array - 1;
@@ -82,14 +87,16 @@ void * darrToArray( void *array ) {
 
   free(header);
   return data;
-}
+} // darrToArray function end
 
-void darrDestroy( void *array ) {
+void DARR_API
+darrDestroy( void *array ) {
   assert(array != NULL);
   free((DarrHeader *)array - 1);
-}
+} // darrDestroy function end
 
-void * darrPush( void *array, const void *elementPtr ) {
+void * DARR_API
+darrPush( void *array, const void *elementPtr ) {
   assert(array != NULL);
   assert(elementPtr != NULL);
 
@@ -101,6 +108,6 @@ void * darrPush( void *array, const void *elementPtr ) {
   memcpy((unsigned char *)(header + 1) + (header->size - 1) * header->elementSize, elementPtr, header->elementSize);
 
   return header + 1;
-}
+} // darrPush function end
 
 // darr.c file end

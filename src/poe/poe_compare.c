@@ -17,28 +17,12 @@ poeIsCyrillicAlpha( unsigned char c ) {
   return c >= 0xC0 && c <= 0xFF || c == 0xA8 || c == 0xB8;
 } // poeIsCyrillicAlpha function end
 
-/**
- * @brief check if character can be used
- * 
- * @param c character
- * 
- * @return POE_TRUE if ok, POE_FALSE if should be skipped
- */
-static inline PoeBool
+PoeBool POE_API
 poeCompareCheckCharacterComparability( unsigned char c ) {
   return poeIsCyrillicAlpha(c) || isdigit(c) || isalpha(c) || isspace(c);
 } // poeCompareCheckCharacterComparability function end
 
-/**
- * @brief character re-encoding function
- * 
- * @param c character
- * 
- * @note accepts ASCII or passed by poeCompareCheckCharacterComparability function characters only
- * 
- * @return re-encoded character
- */
-static inline unsigned char
+unsigned char POE_API
 poeCompareProcessCharacter( unsigned char c ) {
   // ASCII
   if (c <= 0x7F)

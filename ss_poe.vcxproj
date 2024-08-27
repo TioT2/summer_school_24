@@ -21,13 +21,18 @@
   <ItemGroup>
     <ClCompile Include="src\darr\darr.c" />
     <ClCompile Include="src\main.c" />
-    <ClCompile Include="src\poe\poe.c" />
+    <ClCompile Include="src\poe\poe_core.c" />
     <ClCompile Include="src\poe\poe_compare.c" />
+    <ClCompile Include="src\poe\poe_generator.c" />
     <ClCompile Include="src\poe\poe_sort.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\darr\darr.h" />
     <ClInclude Include="src\poe\poe.h" />
+    <ClInclude Include="src\poe\poe_compare.h" />
+    <ClInclude Include="src\poe\poe_core.h" />
+    <ClInclude Include="src\poe\poe_generator.h" />
+    <ClInclude Include="src\poe\poe_sort.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

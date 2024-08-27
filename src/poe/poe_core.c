@@ -10,11 +10,11 @@ poeParseText( FILE *const file, PoeText *const dst ) {
   char buffer[2048] = {0};
   const int bufferLength = 2048;
 
-  char *stringBuffer = darrCreate(char, 1);
+  char *stringBuffer = darrCreate(sizeof(char), 1);
   if (stringBuffer == NULL)
     return POE_FALSE;
 
-  size_t *stringIndexBuffer = darrCreate(size_t, 0);
+  size_t *stringIndexBuffer = darrCreate(sizeof(size_t), 0);
   if (stringIndexBuffer == NULL) {
     darrDestroy(stringBuffer);
     return POE_FALSE;
@@ -116,4 +116,4 @@ poeShuffleText( PoeText *const text, const size_t permutationCount ) {
   }
 } // poeShuffleText function end
 
-// file poe.c
+// file poe_core.c

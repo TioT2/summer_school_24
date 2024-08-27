@@ -21,6 +21,7 @@ main( void ) {
   fclose(f);
   assert(cond);
 
+
   fopen_s(&f, "test_out/out.txt", "w");
 
   assert(f != NULL);

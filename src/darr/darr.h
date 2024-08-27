@@ -5,19 +5,68 @@
 #include <string.h>
 #include <assert.h>
 
-void * _darrCreate( size_t elementSize, size_t initialSize );
+#define DARR_API __cdecl
 
-#define darrCreate(type, initialSize) ((type *)_darrCreate(sizeof(type), (initialSize)))
+/**
+ * @brief dynamic array constructor
+ * 
+ * @param elementSize array element size
+ * @param initialSize initial array size
+ * 
+ * @return created dynamic array
+ */
+void * DARR_API
+darrCreate( size_t elementSize, size_t initialSize );
 
-void * darrPush( void *array, const void *elementPtr );
+/**
+ * @brief element to array pushing function (extends array by 1 element)
+ * 
+ * @param array      array to push value to
+ * @param elementPtr element data
+ * 
+ * @return reallocated array
+ */
+void * DARR_API
+darrPush( void *array, const void *elementPtr );
 
-void * darrReserve( void *array, size_t elementCount );
+/**
+ * @brief array values reserve function (extends array by elementCount elements)
+ * 
+ * @param array        array to reserve values in
+ * @param elementCount count of elements to reserve
+ * 
+ * @return reallocated array
+ */
+void * DARR_API
+darrReserve( void *array, size_t elementCount );
 
-void * darrTruncCapacity( void *array );
+/**
+ * @brief array capacity to minimal required capacity truncation function
+ * 
+ * @param array array to truncate capacity of
+ * 
+ * @return reallocated array
+ */
+void * DARR_API
+darrTruncCapacity( void *array );
 
-void * darrToArray( void *array );
+/**
+ * @brief dynamic to ordinary array (ok to free by 'free(arr)' call) transform function
+ * 
+ * @param array dynamic array to transform
+ * 
+ * @return ordinary array with same data
+ */
+void * DARR_API
+darrToArray( void *array );
 
-void darrDestroy( void *array );
+/**
+ * @brief array destructor
+ * 
+ * @param array array to destroy
+ */
+void DARR_API
+darrDestroy( void *array );
 
 #endif // !defined(DARR_H_)
 
