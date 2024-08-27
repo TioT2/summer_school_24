@@ -142,39 +142,72 @@ poeGeneratorDestroy(
   free(generator->endings);
 } // poeGeneratorDestroy function end
 
+struct __PoeResultOf_poeGeneratorGetRandPair {
+  size_t first;
+  size_t second;
+}
+poeGeneratorGetRandPair( const size_t mod ) {
+  assert(mod >= 2);
+
+  struct __PoeResultOf_poeGeneratorGetRandPair out = {
+    .first = rand() % mod,
+    .second = rand() % mod,
+  };
+
+  while (out.second == out.first)
+    out.second = rand() % mod;
+
+  return out;
+}
+
 char * POE_API
 poeGenerateOneginStanza( const PoeGenerator *const generator ) {
   assert(generator != NULL);
 
-  const PoeEnding * endings[7] = {
-    generator->endings + rand() % generator->endingCount,
-    generator->endings + rand() % generator->endingCount,
-    generator->endings + rand() % generator->endingCount,
-    generator->endings + rand() % generator->endingCount,
-    generator->endings + rand() % generator->endingCount,
-    generator->endings + rand() % generator->endingCount,
-    generator->endings + rand() % generator->endingCount,
-  };
+  const PoeEnding * endings[7] = {NULL};
 
-  const PoeString * lines[14] = {
-    endings[0]->strings[rand() % endings[0]->stringCount],
-    endings[1]->strings[rand() % endings[1]->stringCount],
-    endings[0]->strings[rand() % endings[0]->stringCount],
-    endings[1]->strings[rand() % endings[1]->stringCount],
+  for (size_t i = 0; i < 7; i++) {
+    for (;;) {
+      endings[i] = generator->endings + rand() % generator->endingCount;
 
-    endings[2]->strings[rand() % endings[2]->stringCount],
-    endings[2]->strings[rand() % endings[2]->stringCount],
-    endings[3]->strings[rand() % endings[3]->stringCount],
-    endings[3]->strings[rand() % endings[3]->stringCount],
+      if (endings[i]->stringCount < 2)
+        continue;
+      break;
+    }
+  }
 
-    endings[4]->strings[rand() % endings[4]->stringCount],
-    endings[5]->strings[rand() % endings[5]->stringCount],
-    endings[5]->strings[rand() % endings[5]->stringCount],
-    endings[4]->strings[rand() % endings[4]->stringCount],
+  struct __PoeResultOf_poeGeneratorGetRandPair randPair1, randPair2;
 
-    endings[6]->strings[rand() % endings[6]->stringCount],
-    endings[6]->strings[rand() % endings[6]->stringCount],
-  };
+  const PoeString * lines[14] = {0};
+
+  randPair1 = poeGeneratorGetRandPair(endings[0]->stringCount);
+  randPair2 = poeGeneratorGetRandPair(endings[1]->stringCount);
+
+  lines[ 0] = endings[0]->strings[randPair1.first ];
+  lines[ 1] = endings[1]->strings[randPair2.first ];
+  lines[ 2] = endings[0]->strings[randPair1.second];
+  lines[ 3] = endings[1]->strings[randPair2.second];
+
+  randPair1 = poeGeneratorGetRandPair(endings[2]->stringCount);
+  randPair2 = poeGeneratorGetRandPair(endings[3]->stringCount);
+
+  lines[ 4] = endings[2]->strings[randPair1.first ];
+  lines[ 5] = endings[2]->strings[randPair1.second];
+  lines[ 6] = endings[3]->strings[randPair2.first ];
+  lines[ 7] = endings[3]->strings[randPair2.second];
+
+  randPair1 = poeGeneratorGetRandPair(endings[4]->stringCount);
+  randPair2 = poeGeneratorGetRandPair(endings[5]->stringCount);
+
+  lines[ 8] = endings[4]->strings[randPair1.first ];
+  lines[ 9] = endings[5]->strings[randPair2.first ];
+  lines[10] = endings[5]->strings[randPair2.second];
+  lines[11] = endings[4]->strings[randPair1.second];
+
+  randPair1 = poeGeneratorGetRandPair(endings[6]->stringCount);
+
+  lines[12] = endings[6]->strings[randPair1.first ];
+  lines[13] = endings[6]->strings[randPair1.second];
 
   size_t totalLength = 0;
 
