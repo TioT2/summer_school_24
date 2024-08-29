@@ -6,8 +6,6 @@
 
 #include "poe_generator.h"
 
-/// TODO replace linear search with binary one.
-
 /**
  * @brief last characters getting function
  * 
@@ -21,7 +19,7 @@ poeGeneratorGetStringLastCharacters( const PoeString *const string ) {
 
   char buffer[4] = {0};
   size_t bufferSize = 0;
-  unsigned char *iter = (unsigned char *)string->last;
+  unsigned char *iter = (unsigned char *)string->end - 1;
 
   while (bufferSize < 3 && *iter != '\0') {
     if (poeCompareCheckCharacterComparability(*iter))
@@ -217,7 +215,7 @@ poeGenerateOneginStanza( const PoeGenerator *const generator ) {
   size_t totalLength = 0;
 
   for (size_t i = 0; i < sizeof(lines) / sizeof(lines[0]); i++)
-    totalLength += lines[i]->last + 2 - lines[i]->first;
+    totalLength += lines[i]->end + 2 - lines[i]->begin;
 
   char *buffer = (char *)calloc(totalLength, sizeof(char));
 
@@ -227,8 +225,8 @@ poeGenerateOneginStanza( const PoeGenerator *const generator ) {
   char *iter = buffer;
 
   for (size_t i = 0; i < sizeof(lines) / sizeof(lines[0]); i++) {
-    size_t size = lines[i]->last + 1 - lines[i]->first;
-    memcpy(iter, lines[i]->first, size);
+    size_t size = lines[i]->end - lines[i]->begin;
+    memcpy(iter, lines[i]->begin, size);
     iter += size;
 
     *iter++ = '\n';
@@ -251,7 +249,7 @@ poeGeneratorPrint(
     const PoeEnding *const ending = generator->endings + endingIndex;
 
     for (size_t i = 0; i < ending->stringCount; i++)
-      fprintf(file, "%s\n", ending->strings[i]->first);
+      fprintf(file, "%s\n", ending->strings[i]->begin);
     fprintf(file, "\n----------------------------------------------------------------------\n");
   }
 } // poePrintEndings function end

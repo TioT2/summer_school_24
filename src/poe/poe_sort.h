@@ -20,6 +20,16 @@ void POE_API
 poeSortText( PoeText *text, const PoeStringCompareFn compareFn );
 
 /**
+ * @brief standard library qsort_s compare function wrapper for POE compare functions
+ * @param compareFn compare function (passed through qsort_s context)
+ * @param lhs       left hand side
+ * @param rhs       right hand side
+ * @return compare result
+ */
+int __cdecl
+poeStdCompareWrapper( void *compareFn, const void *lhs, const void *rhs );
+
+/**
  * @brief text by standard qsort_s sorting function
  * 
  * @param text      text to sort
@@ -35,7 +45,7 @@ poeSortTextStd( PoeText *text, const PoeStringCompareFn compareFn );
  * @param permutationCount count of permutations to perform
  */
 void POE_API
-poeShuffleText( PoeText *const text, size_t permutationCount );
+poeShuffleText( PoeText *text, size_t permutationCount );
 
 #endif // !defined(POE_SORT_H_)
 

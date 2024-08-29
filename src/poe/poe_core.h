@@ -32,8 +32,8 @@ typedef int PoeBool;
 
 /// string representation structure
 typedef struct __PoeString {
-  char *first; ///< first character pointer
-  char *last;  ///< last character pointer
+  char *begin; ///< first character pointer
+  char *end;   ///< string end (points to '\0' string character)
 } PoeString;
 
 /// text representation structure

@@ -1,7 +1,7 @@
 /**
  * @file   main.cpp
  * @author tiot2
- * @brief  Project main module
+ * @brief  project main module
  */
 
 #include <stdio.h>
@@ -54,14 +54,14 @@ main( void ) {
 
   PoeText text = {0};
   PoeBool textIsInit = POE_FALSE;
-  PoeGenerator generator = {0};
+  PoeGenerator2 generator = {0};
   PoeBool generatorIsInit = POE_FALSE;
   FILE *file = NULL;
 
   static const struct {
     const char
       *load       ,
-      *genStanza  ,
+      *stanza     ,
       *help       ,
       *sort       ,
       *sortInitial,
@@ -71,7 +71,7 @@ main( void ) {
       *quit       ;
   } command = {
     .load        = "load",
-    .genStanza   = "stanza",
+    .stanza      = "stanza",
     .help        = "help",
     .sort        = "sort",
     .sortInitial = "initial",
@@ -111,7 +111,7 @@ main( void ) {
     if (strcmp(buffer, command.load) == 0) {
       if (generatorIsInit) {
         // generator deinitialization
-        poeDestroyGenerator(&generator);
+        poeDestroyGenerator2(&generator);
         generatorIsInit = POE_FALSE;
       }
 
@@ -133,38 +133,39 @@ main( void ) {
     }
 
     if (strcmp(buffer, command.help) == 0) {
-      printf("    load file              %s <file name>\n", command.load);
-      printf("    generate stanza        %s\n", command.genStanza);
+      printf("    load file              %s <file name>\n"           , command.load);
+      printf("    generate stanza        %s\n"                       , command.stanza);
       printf("    sort with comparator   %s <\'%s\'|\'%s\'|\'%s\'>\n", command.sort, command.sortInitial, command.sortForward, command.sortReverse);
-      printf("    write to file          %s <file name>\n", command.write);
+      printf("    write to file          %s <file name>\n"           , command.write);
       printf("\n");
-      printf("    show this menu         %s\n", command.help);
-      printf("    quit from program      %s\n", command.quit);
+      printf("    show this menu         %s\n"                       , command.help);
+      printf("    quit from program      %s\n"                       , command.quit);
       printf("    execute cmd command    !<command>\n");
       continue;
     }
 
-    if (strcmp(buffer, command.genStanza) == 0) {
+    if (strcmp(buffer, command.stanza) == 0) {
       if (!textIsInit) {
         printf("    no text to generate stanza from\n");
         continue;
       }
 
       if (!generatorIsInit)
-        if (poeCreateGenerator(&text, &generator)) {
+        if (poeCreateGenerator2(&text, &generator)) {
           generatorIsInit = POE_TRUE;
         } else {
           printf("    error during text generator initialization\n");
           continue;
         }
 
-      char *stanza = poeGenerateOneginStanza(&generator);
-
-      if (stanza == NULL)
+      const PoeString *stanzaBuffer[14] = {NULL};
+      if (!poeGenerateOneginStanza2(&generator, stanzaBuffer)) {
         printf("    error during stanza generation occured\n");
-      printf("%s\n", stanza);
-      free(stanza);
+        continue;
+      }
 
+      for (size_t i = 0; i < 14; i++)
+        printf("%s\n", stanzaBuffer[i]->begin);
       continue;
     }
 
@@ -175,7 +176,7 @@ main( void ) {
       }
 
       if (generatorIsInit)
-        poeDestroyGenerator(&generator);
+        poeDestroyGenerator2(&generator);
 
       PoeStringCompareFn compareFn = NULL;
 
@@ -222,7 +223,7 @@ main( void ) {
   }
 
   if (generatorIsInit)
-    poeDestroyGenerator(&generator);
+    poeDestroyGenerator2(&generator);
   if (textIsInit)
     poeDestroyText(&text);
 

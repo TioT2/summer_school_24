@@ -75,8 +75,8 @@ poeParseText( FILE *const file, PoeText *const dst ) {
   }
 
   for (size_t i = 0; i < stringCount; i++) {
-    strings[i].first = stringBuffer + stringIndexBuffer[i];
-    strings[i].last = stringBuffer + stringIndexBuffer[i + 1] - 2;
+    strings[i].begin = stringBuffer + stringIndexBuffer[i];
+    strings[i].end = stringBuffer + stringIndexBuffer[i + 1] - 1;
   }
   darrDestroy(stringIndexBuffer);
 
@@ -101,7 +101,7 @@ poeWriteText( FILE *const file, const PoeText *const text ) {
   assert(text != NULL);
 
   for (size_t i = 0; i < text->stringCount; i++) {
-    fputs(text->strings[i].first, file);
+    fputs(text->strings[i].begin, file);
     fputc('\n', file);
   }
 } // poeWriteText function end

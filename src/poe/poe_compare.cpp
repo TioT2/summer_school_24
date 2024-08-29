@@ -8,7 +8,7 @@
 
 PoeOrdering POE_API
 poeCompareInitialOrder( const PoeString *lhs, const PoeString *rhs ) {
-  return poeCompareSize((size_t)lhs->first, (size_t)rhs->first);
+  return poeCompareSize((size_t)lhs->begin, (size_t)rhs->begin);
 } // poeCompareInitialOrder function end
 
 /**
@@ -81,8 +81,8 @@ poeCompareFromStart( const PoeString *const lhs, const PoeString *const rhs ) {
   assert(rhs != NULL);
 
   struct __PoeResultOf_poeCompareFromStartHelper
-    left  = { .ptr = lhs->first },
-    right = { .ptr = rhs->first };
+    left  = { .ptr = lhs->begin },
+    right = { .ptr = rhs->begin };
 
   while (POE_TRUE) {
     // function
@@ -133,8 +133,8 @@ poeCompareFromEnd( const PoeString *const lhs, const PoeString *const rhs ) {
   assert(rhs != NULL);
 
   struct __PoeResultOf_poeCompareFromEndHelper
-    left  = { .ptr = lhs->last, },
-    right = { .ptr = rhs->last, };
+    left  = { .ptr = lhs->end - 1, },
+    right = { .ptr = rhs->end - 1, };
 
   while (POE_TRUE) {
     // function
