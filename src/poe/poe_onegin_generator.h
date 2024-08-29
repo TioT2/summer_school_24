@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_onegin_generator.h
+ * @author tiot2
+ * @brief  Poem processor Onegin-rhytm-based generator declaration module
+ */
+
 #ifndef POE_ONEGIN_GENERATOR_H_
 #define POE_ONEGIN_GENERATOR_H_
 

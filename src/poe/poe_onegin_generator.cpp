@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_onegin_generator.h
+ * @author tiot2
+ * @brief  Poem processor Onegin-rhytm-based generator implementation module
+ */
+
 #include "poe_onegin_generator.h"
 
 PoeBool POE_API

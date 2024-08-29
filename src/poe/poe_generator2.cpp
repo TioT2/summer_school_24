@@ -1,3 +1,9 @@
+/**
+ * @file   poe/poe_generator.h
+ * @author tiot2
+ * @brief  Poem processor new text generator implementation module
+ */
+
 #include "poe_generator2.h"
 
 /**
