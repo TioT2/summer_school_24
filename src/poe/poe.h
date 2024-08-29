@@ -10,6 +10,7 @@
 #include "poe_sort.h"
 #include "poe_generator.h"
 #include "poe_generator2.h"
+#include "poe_onegin_generator.h"
 
 #endif // !defined(POE_H_)
 

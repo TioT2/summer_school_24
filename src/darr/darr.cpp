@@ -23,7 +23,7 @@ darrCreate( size_t elementSize, size_t initialSize ) {
     initialSize *= 2;
   }
 
-  DarrHeader *header = (DarrHeader *)malloc(sizeof(DarrHeader) + elementSize * capacity);
+  DarrHeader *header = (DarrHeader *)calloc(sizeof(DarrHeader) + elementSize * capacity, 1);
 
   if (header == NULL)
     return NULL;
@@ -86,7 +86,7 @@ darrToArray( void *array ) {
 
   DarrHeader *header = (DarrHeader *)array - 1;
 
-  void *data = malloc(header->size * header->elementSize);
+  void *data = calloc(header->size * header->elementSize, 1);
 
   if (data == NULL) {
     free(header);

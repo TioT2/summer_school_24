@@ -25,6 +25,7 @@
     <ClCompile Include="src\poe\poe_compare.cpp" />
     <ClCompile Include="src\poe\poe_generator.cpp" />
     <ClCompile Include="src\poe\poe_generator2.cpp" />
+    <ClCompile Include="src\poe\poe_onegin_generator.cpp" />
     <ClCompile Include="src\poe\poe_sort.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +35,7 @@
     <ClInclude Include="src\poe\poe_core.h" />
     <ClInclude Include="src\poe\poe_generator.h" />
     <ClInclude Include="src\poe\poe_generator2.h" />
+    <ClInclude Include="src\poe\poe_onegin_generator.h" />
     <ClInclude Include="src\poe\poe_sort.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

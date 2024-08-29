@@ -42,6 +42,9 @@
     <ClCompile Include="src\poe\poe_generator2.cpp">
       <Filter>Source Files\Poem processor</Filter>
     </ClCompile>
+    <ClCompile Include="src\poe\poe_onegin_generator.cpp">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\darr\darr.h">
@@ -63,6 +66,9 @@
       <Filter>Source Files\Poem processor</Filter>
     </ClInclude>
     <ClInclude Include="src\poe\poe_generator2.h">
+      <Filter>Source Files\Poem processor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\poe\poe_onegin_generator.h">
       <Filter>Source Files\Poem processor</Filter>
     </ClInclude>
   </ItemGroup>

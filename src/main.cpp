@@ -54,7 +54,7 @@ main( void ) {
 
   PoeText text = {0};
   PoeBool textIsInit = POE_FALSE;
-  PoeGenerator2 generator = {0};
+  PoeOneginGenerator generator = {0};
   PoeBool generatorIsInit = POE_FALSE;
   FILE *file = NULL;
 
@@ -111,8 +111,12 @@ main( void ) {
     if (strcmp(buffer, command.load) == 0) {
       if (generatorIsInit) {
         // generator deinitialization
-        poeDestroyGenerator2(&generator);
+        poeDestroyOneginGenerator(&generator);
         generatorIsInit = POE_FALSE;
+
+        // text initialization
+        poeDestroyText(&text);
+        textIsInit = POE_FALSE;
       }
 
       fopen_s(&file, commandData, "r");
@@ -151,7 +155,7 @@ main( void ) {
       }
 
       if (!generatorIsInit)
-        if (poeCreateGenerator2(&text, &generator)) {
+        if (poeCreateOneginGenerator(&text, &generator)) {
           generatorIsInit = POE_TRUE;
         } else {
           printf("    error during text generator initialization\n");
@@ -159,7 +163,7 @@ main( void ) {
         }
 
       const PoeString *stanzaBuffer[14] = {NULL};
-      if (!poeGenerateOneginStanza2(&generator, stanzaBuffer)) {
+      if (!poeOneginGenerateStanza(&generator, stanzaBuffer)) {
         printf("    error during stanza generation occured\n");
         continue;
       }
@@ -176,7 +180,7 @@ main( void ) {
       }
 
       if (generatorIsInit)
-        poeDestroyGenerator2(&generator);
+        poeDestroyOneginGenerator(&generator);
 
       PoeStringCompareFn compareFn = NULL;
 
@@ -223,7 +227,7 @@ main( void ) {
   }
 
   if (generatorIsInit)
-    poeDestroyGenerator2(&generator);
+    poeDestroyOneginGenerator(&generator);
   if (textIsInit)
     poeDestroyText(&text);
 

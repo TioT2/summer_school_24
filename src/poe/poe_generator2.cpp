@@ -1,6 +1,5 @@
 #include "poe_generator2.h"
 
-  
 /**
  * @brief last characters getting function
  * 
@@ -65,6 +64,7 @@ poeGenerateOneginStanza2( const PoeGenerator2 *const generator, const PoeString 
   for (size_t i = 0; i < 7; i++) {
     const PoeString *str = generator->strings + baseIndices[i];
 
+    // trying to ignore empty strings
     do {
       baseIndices[i] = rand() % (generator->text->stringCount - 30) + 15;
       str = generator->strings + baseIndices[i];
@@ -81,7 +81,6 @@ poeGenerateOneginStanza2( const PoeGenerator2 *const generator, const PoeString 
 
     uint32_t firstLastChars = poeGeneratorGetStringLastCharacters(generator->strings + baseIndex);
 
-    // check 10-neighbourhood of first string
     size_t i = 0;
     for (i = 14; i > 0; i--)
       if (poeGeneratorGetStringLastCharacters(generator->strings + baseIndex + i) == firstLastChars) {
