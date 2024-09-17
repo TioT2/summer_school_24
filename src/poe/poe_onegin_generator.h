@@ -1,7 +1,7 @@
 /**
  * @file   poe/poe_onegin_generator.h
  * @author tiot2
- * @brief  Poem processor Onegin-rhytm-based generator declaration module
+ * @brief  Poem procesor Onegin-rhytm-based generator declaration module
  */
 
 #ifndef POE_ONEGIN_GENERATOR_H_
@@ -32,6 +32,11 @@ typedef struct __PoeOneginGenerator {
   PoeOneginBucket       buckets[POE_ONEGIN_BUCKET_COUNT]; ///< string buckets
 } PoeOneginGenerator;
 
+/// Generator create status
+typedef enum __PoeOneginGeneratorStatus {
+  POE_DEFINE_COMMON_STATUS(POE_ONEGIN_GENERATOR_STATUS)
+} PoeOneginGeneratorStatus;
+
 /**
  * @brief generator create function
  * 
@@ -40,9 +45,9 @@ typedef struct __PoeOneginGenerator {
  * 
  * @note text must be built from 14-line Onegin stanzas
  * 
- * @return POE_TRUE if success, POE_FALSE otherwise
+ * @return status
  */
-PoeBool POE_API
+PoeOneginGeneratorStatus POE_API
 poeCreateOneginGenerator(
   const PoeText *text,
   PoeOneginGenerator *generator
@@ -54,9 +59,9 @@ poeCreateOneginGenerator(
  * @param generator    generator to generate stanza by
  * @param stanzaBuffer buffer to write answer (note: minimal accepted size of buffer is 14)
  * 
- * @return POE_TRUE if generated, POE_FALSE otherwise
+ * @return status
  */
-PoeBool POE_API
+PoeOneginGeneratorStatus POE_API
 poeOneginGenerateStanza(
   const PoeOneginGenerator *generator,
   const PoeString **stanzaBuffer

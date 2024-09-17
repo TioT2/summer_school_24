@@ -10,7 +10,7 @@
  * @brief last characters getting function
  * 
  * @param string string to get last characters of
- * 
+ *
  * @return last character number
  */
 static uint32_t

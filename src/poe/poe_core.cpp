@@ -1,4 +1,5 @@
 /**
+* 
  * @file   poe/poe_core.cpp
  * @author tiot2
  * @brief  Poem processor core implementation module
@@ -6,86 +7,69 @@
 
 #include "poe.h"
 
-PoeBool POE_API
+PoeStatus POE_API
 poeParseText( FILE *const file, PoeText *const dst ) {
   assert(file != NULL);
   assert(dst != NULL);
 
-  char buffer[2048] = {0};
-  const int bufferLength = 2048;
+  fseek(file, 0, SEEK_END);
+  size_t size = ftell(file);
+  fseek(file, 0, SEEK_SET);
 
-  char *stringBuffer = (char *)darrCreate(sizeof(char), 1);
+  // with starting and ending \0
+  char *stringBuffer = (char *)calloc(size + 2, 1);
   if (stringBuffer == NULL)
-    return POE_FALSE;
+    return POE_STATUS_BAD_ALLOC;
+  fread(stringBuffer + 1, 1, size, file);
 
-  size_t *stringIndexBuffer = (size_t *)darrCreate(sizeof(size_t), 0);
-  if (stringIndexBuffer == NULL) {
-    darrDestroy(stringBuffer);
-    return POE_FALSE;
+  char *writer = stringBuffer + 1;
+  const char *reader = stringBuffer + 1;
+  char *readerEnd = stringBuffer + size + 1;
+
+  while (reader < readerEnd) {
+    while (*reader == '\r')
+      reader++;
+    *writer++ = *reader++;
   }
 
-  size_t stringBufferNext = 1;
-  size_t stringCount = 0;
+  memset(writer, 0, readerEnd - writer);
 
-  // Initialize string buffer first value (for every string have '\0' in start and in end\, actually)
-  stringBuffer[0] = '\0';
-
-  while (fgets(buffer, bufferLength, file) != NULL) {
-    const size_t bufferReadSize = strlen(buffer);
-
-    if (bufferReadSize > 0)
-      buffer[bufferReadSize - 1] = '\0';
-
-    if ((stringIndexBuffer = (size_t *)darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
-      darrDestroy(stringBuffer);
-      return POE_FALSE;
-    }
-
-    stringBuffer = (char *)darrReserve(stringBuffer, bufferReadSize);
-
-    if (stringBuffer == NULL) {
-      darrDestroy(stringIndexBuffer);
-      return POE_FALSE;
-    }
-
-    memcpy(stringBuffer + stringBufferNext, buffer, bufferReadSize);
-
-    stringCount += 1;
-    stringBufferNext += bufferReadSize;
-  }
-
-  if ((stringIndexBuffer = (size_t *)darrPush(stringIndexBuffer, &stringBufferNext)) == NULL) {
-    darrDestroy(stringBuffer);
-    return POE_FALSE;
-  }
-
-  stringBuffer = (char *)darrToArray(stringBuffer);
-
-  if (stringBuffer == NULL) {
-    darrDestroy(stringIndexBuffer);
-    return POE_FALSE;
-  }
-
+  size_t stringCount = 1;
+  for (const char *t = stringBuffer; t < writer; t++)
+    stringCount += (*t == '\n');
   PoeString *strings = (PoeString *)calloc(stringCount, sizeof(PoeString));
 
   if (strings == NULL) {
-    darrDestroy(stringIndexBuffer);
-    darrDestroy(stringBuffer);
-    return POE_FALSE;
+    free(stringBuffer);
+    return POE_STATUS_BAD_ALLOC;
   }
 
-  for (size_t i = 0; i < stringCount; i++) {
-    strings[i].begin = stringBuffer + stringIndexBuffer[i];
-    strings[i].end = stringBuffer + stringIndexBuffer[i + 1] - 1;
+  {
+    PoeString *stringIter = strings;
+    char *charIter = stringBuffer + 1;
+    char *const charIterEnd = writer;
+    
+    strings[0].begin = charIter;
+    strings[stringCount - 1].end = writer;
+
+    while (charIter < charIterEnd) {
+      if (*charIter == '\n') {
+        stringIter->end = charIter;
+        (stringIter + 1)->begin = charIter + 1;
+        *charIter = '\0';
+
+        stringIter++;
+      }
+      charIter++;
+    }
   }
-  darrDestroy(stringIndexBuffer);
 
   dst->stringBuffer = stringBuffer;
-  dst->strings = strings;
   dst->stringCount = stringCount;
+  dst->strings = strings;
 
-  return POE_TRUE;
-} // poeParseText function end
+  return POE_STATUS_OK;
+} // poeParseText2 function end
 
 void POE_API
 poeDestroyText( PoeText *const text ) {

@@ -6,7 +6,7 @@
 
 #include "poe_onegin_generator.h"
 
-PoeBool POE_API
+PoeOneginGeneratorStatus POE_API
 poeCreateOneginGenerator(
   const PoeText *const text,
   PoeOneginGenerator *const generator
@@ -34,12 +34,13 @@ poeCreateOneginGenerator(
     if (!isStanza)
       continue;
 
+    // check for line is empty or not
     if (current[16].begin != current[16].end)
       continue;
 
     current++;
     if ((stanzaStartLines = (const PoeString **)darrPush(stanzaStartLines, &current)) == NULL)
-      return POE_FALSE;
+      return POE_ONEGIN_GENERATOR_STATUS_BAD_ALLOC;
   }
 
   size_t stanzaCount = darrGetSize(stanzaStartLines);
@@ -81,10 +82,10 @@ poeCreateOneginGenerator(
   generator->stringPairCount = stringPairCount;
   generator->text = text;
 
-  return POE_TRUE;
+  return POE_ONEGIN_GENERATOR_STATUS_OK;
 } // poeCreateOneginGenerator function end
 
-PoeBool POE_API
+PoeOneginGeneratorStatus POE_API
 poeOneginGenerateStanza(
   const PoeOneginGenerator *const generator,
   const PoeString **stanzaBuffer
@@ -115,7 +116,7 @@ poeOneginGenerateStanza(
   stanzaBuffer[12] = &pairs[6]->first;
   stanzaBuffer[13] = &pairs[6]->second;
 
-  return POE_TRUE;
+  return POE_ONEGIN_GENERATOR_STATUS_OK;
 } // poeOneginGenerateStanza function end
 
 void POE_API

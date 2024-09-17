@@ -85,6 +85,9 @@ main( void ) {
 
   PoeBool doContinue = POE_TRUE;
 
+  // ERROR CODES
+  // CLI
+
   while (doContinue) {
     printf(">>> ");
 
@@ -119,14 +122,21 @@ main( void ) {
         textIsInit = POE_FALSE;
       }
 
-      fopen_s(&file, commandData, "r");
+      // TODO Handle errorcode
+      int errCode = fopen_s(&file, commandData, "rb");
+
 
       if (file == NULL) {
-        printf("    can't open file \'%s\'\n", commandData);
+        char errBuffer[512] = {0};
+
+        if (strerror_s(errBuffer, sizeof(errBuffer) - 1, errCode) != 0)
+          strcpy_s(errBuffer, sizeof(errBuffer) - 1, "unknown");
+
+        printf("    error during \'%s\' file open: %s\n", commandData, errBuffer);
         continue;
       }
 
-      if (poeParseText(file, &text))
+      if (POE_CHECK(poeParseText(file, &text)))
         textIsInit = POE_TRUE;
       else
         printf("    error during text file parsing occured\n");
@@ -155,7 +165,7 @@ main( void ) {
       }
 
       if (!generatorIsInit)
-        if (poeCreateOneginGenerator(&text, &generator)) {
+        if (POE_CHECK(poeCreateOneginGenerator(&text, &generator))) {
           generatorIsInit = POE_TRUE;
         } else {
           printf("    error during text generator initialization\n");
@@ -163,7 +173,7 @@ main( void ) {
         }
 
       const PoeString *stanzaBuffer[14] = {NULL};
-      if (!poeOneginGenerateStanza(&generator, stanzaBuffer)) {
+      if (!POE_CHECK(poeOneginGenerateStanza(&generator, stanzaBuffer))) {
         printf("    error during stanza generation occured\n");
         continue;
       }
@@ -179,8 +189,10 @@ main( void ) {
         continue;
       }
 
-      if (generatorIsInit)
+      if (generatorIsInit) {
         poeDestroyOneginGenerator(&generator);
+        generatorIsInit = POE_FALSE;
+      }
 
       PoeStringCompareFn compareFn = NULL;
 

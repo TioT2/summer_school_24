@@ -30,6 +30,19 @@ typedef int PoeBool;
 /// calling convention
 #define POE_API __cdecl
 
+// Common status entries definition macro
+#define POE_DEFINE_COMMON_STATUS(PREFIX)         \
+  PREFIX ## _OK        = 0, /* Succeeded      */ \
+  PREFIX ## _BAD_ALLOC = 1, /* Bad allocation */ \
+
+/// Status representation structure
+typedef enum __PoeStatus {
+  POE_DEFINE_COMMON_STATUS(POE_STATUS)
+} PoeStatus;
+
+/// Status checking macro definition
+#define POE_CHECK(expr) ((POE_STATUS_OK) == (PoeStatus)(expr))
+
 /// string representation structure
 typedef struct __PoeString {
   char *begin; ///< first character pointer
@@ -43,6 +56,7 @@ typedef struct __PoeText {
   size_t      stringCount;  ///< count of text strings
 } PoeText;
 
+
 /**
  * @brief text parsing function
  * 
@@ -51,8 +65,8 @@ typedef struct __PoeText {
  * 
  * @return POE_TRUE if parsed successfully, POE_FALSE otherwise
  */
-PoeBool POE_API
-poeParseText( FILE *const file, PoeText *const dst );
+PoeStatus POE_API
+poeParseText( FILE *file, PoeText *dst );
 
 /**
  * @brief text writing function
@@ -61,7 +75,7 @@ poeParseText( FILE *const file, PoeText *const dst );
  * @param text text to write
  */
 void POE_API
-poeWriteText( FILE *const file, const PoeText *const text );
+poeWriteText( FILE *file, const PoeText *text );
 
 /**
  * @brief text destructor
@@ -69,7 +83,7 @@ poeWriteText( FILE *const file, const PoeText *const text );
  * @param text text to destroy
  */
 void POE_API
-poeDestroyText( PoeText *const text );
+poeDestroyText( PoeText *text );
 
 #endif // !defined(POE_CORE_H_)
 
