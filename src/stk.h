@@ -24,7 +24,9 @@ typedef int StkBool;
 #define STK_API __cdecl
 
 #ifdef _DEBUG
-#define STK_ENABLE_DEBUG_INFO
+#define STK_ENABLE_DEBUG_INFO 1
+#else
+#define STK_ENABLE_DEBUG_INFO 0
 #endif
 
 /**
@@ -46,6 +48,55 @@ typedef enum __StkStatus {
     STK_STATUS_INVALID_STACK, ///< invalid stack (null/...)
     STK_STATUS_POP_ERROR,     ///< no elements to pop
 } StkStatus;
+
+#if STK_ENABLE_DEBUG_INFO
+
+/// Debug info representation structure
+typedef struct __StkStackDebugInfo {
+    const char * variableName; ///< variable name
+    const char * elemTypeName; ///< name of stack element type
+    const char * fileName;     ///< create file name
+    size_t       line;         ///< line number
+} StkStackDebugInfo;
+
+inline StkStackDebugInfo
+stkBuildStackDebugInfo( const char *variableName, const char *elemTypeName, const char *fileName, size_t line ) {
+    StkStackDebugInfo debugInfo = {
+        .variableName = variableName,
+        .elemTypeName = elemTypeName,
+        .fileName = fileName,
+        .line = line,
+    };
+
+    return debugInfo;
+}
+
+/**
+ * @brief stack constructor 'implementation' function
+ * 
+ * @param elementSize     size of single element
+ * @param initialCapacity initial capacity of stack
+ * @param dst             destinaiton stack
+ * 
+ * @note this function should not be called manually
+ * 
+ * @return stack construction status
+ */
+StkStatus STK_API
+__stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo dbgInfo, StkStack *dst );
+
+/**
+ * @brief stack constructor
+ * 
+ * @param type            type of stack value
+ * @param initialCapacity stack initial capacity
+ * @param stack           stack (must be lvalue)
+ * 
+ * @return operation status
+ */
+#define stkStackCtor(type, initialCapacity, stack) (__stkStackCtorDbg(sizeof(type), (initialCapacity), stkBuildStackDebugInfo(#stack, #type, __FILE__, __LINE__), &stack))
+
+#else
 
 /**
  * @brief stack constructor 'implementation' function
@@ -71,6 +122,8 @@ __stkStackCtor( size_t elementSize, size_t initialCapacity, StkStack *dst );
  * @return operation status
  */
 #define stkStackCtor(type, initialCapacity, stack) (__stkStackCtor(sizeof(type), (initialCapacity), &stack))
+
+#endif
 
 /**
  * @brief stack destructor

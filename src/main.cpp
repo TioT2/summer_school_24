@@ -26,9 +26,8 @@ main( void ) {
         printf("%d\n", t);
     }
 
-    // call error
+    // produce error
     *((int *)stack + 2) = 47;
-
     stkStackDtor(stack);
 
     return 0;
