@@ -1,29 +1,24 @@
 #include "stk.h"
 
-/**
- * @brief Main project function // TODO: This is useless
- * 
- * @return return function // TODO: balderdash
- */
 int
 main( void ) {
     StkStack stack = NULL;
 
     stkStackCtor(int, 0, stack);
 
-    int t = 0; // TODO: t? not convinced
+    int temp = 0; // TODO: t? not convinced
 
-    t = 3; stkStackPush(&stack, &t);
-    t = 1; stkStackPush(&stack, &t);
-    t = 2; stkStackPush(&stack, &t);
-    t = 4; stkStackPush(&stack, &t);
-    t = 5; stkStackPush(&stack, &t);
+    temp = 3; stkStackPush(&stack, &temp);
+    temp = 1; stkStackPush(&stack, &temp);
+    temp = 2; stkStackPush(&stack, &temp);
+    temp = 4; stkStackPush(&stack, &temp);
+    temp = 5; stkStackPush(&stack, &temp);
 
     StkStatus status;
-    while (STK_TRUE) {
-        if ((status = stkStackPop(&stack, &t)) != STK_STATUS_OK) // TODO: is_successful?
+    while (true) {
+        if ((status = stkStackPop(&stack, &temp)) != STK_STATUS_OK) // TODO: is_successful?
             break;
-        printf("%d\n", t);
+        printf("%d\n", temp);
     }
 
     // produce error

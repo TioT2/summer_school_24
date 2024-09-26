@@ -10,22 +10,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
-/// Boolean type definition
-typedef int StkBool; // TODO: Why? Also <stdbool.h> ?
-
-/// TRUE flag
-#define STK_TRUE  1
-
-/// FALSE flag
-#define STK_FALSE 0
-
-/// API call convention
-// #define STK_API __cdecl
-
-#define STK_API // TODO: turns out specifying calling convention is platform
-// and compiler specific, be careful with this little line you've dropped
-// support of one of the most (if still not the most) used C++ compilers.
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef _DEBUG
 // TODO: Why redefine a macro that is essentially equivalent to _DEBUG?
@@ -35,26 +21,25 @@ typedef int StkBool; // TODO: Why? Also <stdbool.h> ?
 #endif
 
 /**
- * @brief logging function // TODO: Write useful documentation
+ * @brief to stdout logging function
  * 
- * @param fstr format strnig (non-null) // TODO: these are examples
+ * @param fstr format strnig (non-null) (must be printf-compatible format string)
  * @param ...  format args (each argument needs to have corresponding %[] in format string, format is the same as in printf)
  */
-void STK_API
+void
 stkLog( const char *fstr, ... );
 
 /// Stack implementation
 typedef struct __StkStackImpl *StkStack;
 
-/// stack-related operation status (representation structure) ? TODO: isn't this last thing obvious
+/// stack-related operation status
 typedef enum __StkStatus {
-    STK_STATUS_OK,            ///< all's ok
-    STK_STATUS_BAD_ALLOC,     ///< allocation error (no memory)
-    STK_STATUS_INVALID_STACK, ///< invalid stack (null/...)
-    STK_STATUS_POP_ERROR,     ///< no elements to pop
+    STK_STATUS_OK,        ///< all's ok
+    STK_STATUS_BAD_ALLOC, ///< allocation error (no memory)
+    STK_STATUS_CORRUPTED, ///< invalid stack (null/...)
+    STK_STATUS_POP_ERROR, ///< no elements to pop
 } StkStatus;
 
-#if STK_ENABLE_DEBUG_INFO // TODO: try to make your ifdefs shorter, they are hard to read
 
 /// Debug info representation structure
 typedef struct __StkStackDebugInfo {
@@ -79,23 +64,39 @@ stkBuildStackDebugInfo( const char *variableName, const char *elemTypeName, cons
 /**
  * @brief stack constructor 'implementation' function
  * 
- * @param elementSize     size of single element
- * @param initialCapacity initial capacity of stack
- * @param dst             destinaiton stack
+ * @param[in]  elementSize     size of single element
+ * @param[in]  initialCapacity initial capacity of stack
+ * @param[out] dst             destinaiton stack
  * 
  * @note this function should not be called manually
  * 
  * @return stack construction status
  */
-StkStatus STK_API
+StkStatus
+__stkStackCtor( size_t elementSize, size_t initialCapacity, StkStack *dst );
+
+/**
+ * @brief stack constructor 'implementation' function
+ * 
+ * @param[in]  elementSize     size of single element
+ * @param[in]  initialCapacity initial capacity of stack
+ * @param[out] dst             stack constructor destination
+ * 
+ * @note this function should not be called manually
+ * 
+ * @return stack construction status
+ */
+StkStatus
 __stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo dbgInfo, StkStack *dst ); // TODO: Why have this under ifdef?
+
+#if STK_ENABLE_DEBUG_INFO // TODO: try to make your ifdefs shorter, they are hard to read
 
 /**
  * @brief stack constructor
  * 
- * @param type            type of stack value
- * @param initialCapacity stack initial capacity
- * @param stack           stack (must be lvalue)
+ * @param[in]  type            type of stack value
+ * @param[in]  initialCapacity stack initial capacity
+ * @param[out] stack           stack (must be lvalue)
  * 
  * @return operation status
  */
@@ -104,25 +105,11 @@ __stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo
 #else
 
 /**
- * @brief stack constructor 'implementation' function
- * 
- * @param elementSize     size of single element
- * @param initialCapacity initial capacity of stack
- * @param dst             destinaiton stack
- * 
- * @note this function should not be called manually
- * 
- * @return stack construction status
- */
-StkStatus STK_API
-__stkStackCtor( size_t elementSize, size_t initialCapacity, StkStack *dst );
-
-/**
  * @brief stack constructor
  * 
- * @param type            type of stack value
- * @param initialCapacity stack initial capacity
- * @param stack           stack (must be lvalue)
+ * @param[in]  type            type of stack value
+ * @param[in]  initialCapacity stack initial capacity
+ * @param[out] stack           stack (must be lvalue)
  * 
  * @return operation status
  */
@@ -133,35 +120,33 @@ __stkStackCtor( size_t elementSize, size_t initialCapacity, StkStack *dst );
 /**
  * @brief stack destructor
  * 
- * @param stk stack to destroy
+ * @param[in] stk stack to destroy
  */
-StkStatus STK_API
+StkStatus
 stkStackDtor( StkStack stk );
 
 /**
  * @brief stack value pushing function
  * 
- * @param stk stack to push value to
- * @param src data to push
+ * @param[in,out] stk stack to push value to
+ * @param[in]     src data to push
  * 
  * @note src should have at least [elementSize] bytes of readable space
  * 
  * @return operation status
  */
-StkStatus STK_API
+StkStatus
 stkStackPush( StkStack *stk, const void *src );
 
 /**
  * @brief stack value popping function
  * 
- * @param stk stack to pop value from
- * @param dst buffer to write to
- * 
- * @note dst should have at least [elementSize] bytes of writable space
+ * @param[in,out] stk stack to pop value from
+ * @param[out]    dst buffer to write to (should have at least [elementSize] bytes of space available for write)
  * 
  * @return operation status
  */
-StkStatus STK_API
+StkStatus
 stkStackPop( StkStack *stk, void *dst );
 
 #endif // !defiend(STK_H_)
