@@ -12,7 +12,7 @@
 #include <string.h>
 
 /// Boolean type definition
-typedef int StkBool;
+typedef int StkBool; // TODO: Why? Also <stdbool.h> ?
 
 /// TRUE flag
 #define STK_TRUE  1
@@ -21,19 +21,24 @@ typedef int StkBool;
 #define STK_FALSE 0
 
 /// API call convention
-#define STK_API __cdecl
+// #define STK_API __cdecl
+
+#define STK_API // TODO: turns out specifying calling convention is platform
+// and compiler specific, be careful with this little line you've dropped
+// support of one of the most (if still not the most) used C++ compilers.
 
 #ifdef _DEBUG
+// TODO: Why redefine a macro that is essentially equivalent to _DEBUG?
 #define STK_ENABLE_DEBUG_INFO 1
 #else
 #define STK_ENABLE_DEBUG_INFO 0
 #endif
 
 /**
- * @brief logging function
+ * @brief logging function // TODO: Write useful documentation
  * 
- * @param fstr format strnig
- * @param ...  format args
+ * @param fstr format strnig (non-null) // TODO: these are examples
+ * @param ...  format args (each argument needs to have corresponding %[] in format string, format is the same as in printf)
  */
 void STK_API
 stkLog( const char *fstr, ... );
@@ -41,7 +46,7 @@ stkLog( const char *fstr, ... );
 /// Stack implementation
 typedef struct __StkStackImpl *StkStack;
 
-/// stack-related operation status representation structure
+/// stack-related operation status (representation structure) ? TODO: isn't this last thing obvious
 typedef enum __StkStatus {
     STK_STATUS_OK,            ///< all's ok
     STK_STATUS_BAD_ALLOC,     ///< allocation error (no memory)
@@ -49,7 +54,7 @@ typedef enum __StkStatus {
     STK_STATUS_POP_ERROR,     ///< no elements to pop
 } StkStatus;
 
-#if STK_ENABLE_DEBUG_INFO
+#if STK_ENABLE_DEBUG_INFO // TODO: try to make your ifdefs shorter, they are hard to read
 
 /// Debug info representation structure
 typedef struct __StkStackDebugInfo {
@@ -83,7 +88,7 @@ stkBuildStackDebugInfo( const char *variableName, const char *elemTypeName, cons
  * @return stack construction status
  */
 StkStatus STK_API
-__stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo dbgInfo, StkStack *dst );
+__stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo dbgInfo, StkStack *dst ); // TODO: Why have this under ifdef?
 
 /**
  * @brief stack constructor

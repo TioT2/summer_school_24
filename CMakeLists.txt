@@ -11,7 +11,7 @@ endif()
 
 project ("ss_stk")
 
-file(GLOB_RECURSE ss_stk_src
+file(GLOB_RECURSE ss_stk_src # TODO: ?
   src/*.cpp
   src/*.h
 )
