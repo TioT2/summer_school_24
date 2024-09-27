@@ -5,13 +5,13 @@ stkLog( const char *fstr, ... ) {
     va_list args;
 
     va_start(args, fstr);
-    vprintf(fstr, args);
+    vprintf(fstr, args); // TODO: stderr? Also, better logging system can be a feature.
     va_end(args);
 } // stkLog function end
 
 /// stack internal structure
 typedef struct __StkStackImpl {
-    size_t            elementSize; ///< size of single data entry
+    size_t            elementSize; ///< size of single data entry // TODO: size_t for element size, isn't that wasteful?
     size_t            size;        ///< size (in entries)
     size_t            capacity;    ///< capacity (in entries)
 
@@ -19,17 +19,19 @@ typedef struct __StkStackImpl {
     StkStackDebugInfo debugInfo;   ///< debug info
 #endif
 
-    char              data[1];     ///< data buffer
+    char              data[1];     ///< data buffer // TODO: alignment, be careful?
 } StkStackImpl;
 
 /// stack internal validation
-typedef enum __StkStackImplStatus {
+typedef enum __StkStackImplStatus { // TODO: corruption status?
     STK_STACK_IMPL_STATUS_OK,                      ///< all's ok
     STK_STACK_IMPL_STATUS_NULL,                    ///< invalid
     STK_STACK_IMPL_STATUS_SIZE_MORE_THAN_CAPACITY, ///< size is more than capacity
     STK_STACK_IMPL_STATUS_INVALID_CAPACITY,        ///< just invalid capacity
 } StkStackImplStatus;
 
+// TODO: (don't do it if you don't have time) can you make macro named_enum(enum my_enum { a, b, c })
+//       so that named_enum_get_name(my_enum, expression that contains value (a)) // => "a"
 const char *
 stkStackImplStatusStr( StkStackImplStatus status ) {
 #define ELEM_(c) case c: return #c
@@ -47,6 +49,7 @@ stkStackImplStatusStr( StkStackImplStatus status ) {
 #if STK_ENABLE_DEBUG_INFO
 static void
 stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
+    // TODO: assert non-null
     stkLog("\"%s\" of %s constructed at %s:%d",
         dbgInfo->variableName,
         dbgInfo->elemTypeName,
@@ -56,7 +59,9 @@ stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
 }
 #endif
 
-// Stack validation function
+
+// Stack validation function // TODO: less of a macro, more of a function
+// TODO: do { ... } while(0) // TODO: naming (e.g. propagate_stack_error)
 #define STK_VALIDATE_STACK(stk)                                                  \
     {                                                                            \
         StkStackImplStatus status = stkStackValidate(stk);                       \
@@ -109,7 +114,7 @@ stkLogStack( StkStackImpl *stk ) {
 }
 
 static inline StkBool
-stkIsPowerOfTwo( const size_t n ) {
+stkIsPowerOfTwo( const size_t n ) { // TODO: static without the prefix?
     return (n & (n - 1)) == 0;
 } // stkIsPowerOfTwo function end
 
@@ -137,7 +142,16 @@ stkRoundCapacity( size_t number ) {
         return 0;
 
     // awaful, but portable
+// TODO: ^ english C3
 
+    // TODO: You can do faster, like so:
+    // -- number;
+    // number |= number >> 1;
+    // number |= number >> 2;
+    // number |= number >> 4;
+    // number |= number >> 8;
+    // number |= number >> 16;
+    // ++ number;
 
     size_t i = 0;
     while (number != 0) {
@@ -145,11 +159,12 @@ stkRoundCapacity( size_t number ) {
         i += 1;
     }
     return (size_t)1 << (i + 1);
-} // stkRoundPow2 function end
+} // stkRoundPow2 function end // TODO: Why? I mean, you are wrong even.
 
 static StkStackImpl *
 stkStackImplRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
-    return (StkStackImpl *)realloc(stk, sizeof(StkStackImpl) + elemSize * capacity);
+    return (StkStackImpl *)realloc(stk, sizeof(StkStackImpl) + elemSize * capacity); // TODO: extra 1 byte.
+    // TODO: zero it out?
 } // stkStackImplRealloc function end
 
 static StkStatus
@@ -158,14 +173,14 @@ stkStackExtend( StkStackImpl **stk ) {
 
     StkStackImpl *imp = *stk;
 
-    assert(imp != NULL);
+    assert(imp != NULL); // TODO: double check
     STK_VALIDATE_STACK(imp);
 
     size_t newCapacity = imp->capacity * 2;
-    if (newCapacity == 0)
+    if (newCapacity == 0) // TODO: How is this possible, fix in constructor?
         newCapacity = 1;
     // reallocate stack
-    if ((imp = stkStackImplRealloc(imp, imp->elementSize, newCapacity)) == NULL)
+    if ((imp /* TODO: Were is that imp? */= stkStackImplRealloc(imp, imp->elementSize, newCapacity)) == NULL)
         return STK_STATUS_BAD_ALLOC;
     memset(imp->data + imp->capacity * imp->elementSize, 0, imp->capacity * imp->elementSize);
     imp->capacity = newCapacity;
@@ -186,6 +201,7 @@ stkStackShrink( StkStackImpl **stk ) {
     size_t newCapacity = imp->capacity / 4;
     if ((imp = stkStackImplRealloc(imp, imp->elementSize, newCapacity)) == NULL)
         return STK_STATUS_BAD_ALLOC;
+    // TODO: poison shrunk part?
     imp->capacity = newCapacity;
 
     *stk = imp;
@@ -203,14 +219,14 @@ __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack
     const size_t capacity = stkRoundCapacity(initialCapacity);
     StkStackImpl *stk = stkStackImplRealloc(NULL, elementSize, capacity);
     // rebuild into calloc???
-    memset(stk, 0, sizeof(StkStackImpl) + elementSize * capacity);
+    memset(stk, 0, sizeof(StkStackImpl) + elementSize * capacity); // TODO: too early, what if stk is NULL?
 
     // check allocation
     if (stk == NULL)
         return STK_STATUS_BAD_ALLOC;
 
     // fill stk data
-    stk->capacity = capacity;
+    stk->capacity = capacity; // TODO: designated initializers?
     stk->elementSize = elementSize;
     stk->size = 0;
 
@@ -228,15 +244,15 @@ __stkStackCtorDbg(
     const size_t      elementSize,
     const size_t      initialCapacity,
     StkStackDebugInfo debugInfo,
-    StkStack *const   dst
+    StkStack *const   dst // TODO: the only shortened name? 
 ) {
     StkStatus status;
-    if ((status = __stkStackCtor(elementSize, initialCapacity, dst)) != STK_STATUS_OK)
+    if ((status = __stkStackCtor(elementSize, initialCapacity, dst)) != STK_STATUS_OK) // TODO: macro?
         return status;
     (*dst)->debugInfo = debugInfo;
     return STK_STATUS_OK;
-    assert(dst != NULL);
-} // __SstkStackCtor function end
+    assert(dst != NULL); // TODO: Task: find function arguments when this is reachable. Do your worst.
+} // __SstkStackCtor function end // TODO: Ss?
 
 #endif
 
@@ -251,7 +267,7 @@ stkStackPush( StkStack *const stk, const void *const src ) {
     // extend stack if needed
     if (imp->capacity == imp->size) {
         StkStatus status = stkStackExtend(&imp);
-        if (status != STK_STATUS_OK)
+        if (status != STK_STATUS_OK) // TODO: and again
             return status;
         *stk = imp;
     }
@@ -278,7 +294,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
     STK_VALIDATE_STACK(imp);
 
     if (imp->size == 0)
-        return STK_STATUS_POP_ERROR;
+        return STK_STATUS_POP_ERROR; // TODO: this is an entirely different kind of error
 
     imp->size -= 1;
 
@@ -287,7 +303,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
 
     if (imp->size < imp->capacity / 4) {
         StkStatus status = stkStackShrink(&imp);
-        if (status != STK_STACK_IMPL_STATUS_OK)
+        if (status != STK_STACK_IMPL_STATUS_OK) // TODO: fix the warning
             return status;
         *stk = imp;
     }
@@ -300,7 +316,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
 StkStatus STK_API
 stkStackDtor( StkStack stk ) {
     STK_VALIDATE_STACK(stk);
-    free(stk);
+    free(stk); // TODO: idempotent destructor? free(stk), stk = {};
     return STK_STATUS_OK;
 } // stkStackDtor function end
 
