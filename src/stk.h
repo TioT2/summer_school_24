@@ -1,5 +1,5 @@
 /**
- * @brief stack library
+ * @brief stack library declaration module
  */
 
 #ifndef STK_H_
@@ -13,11 +13,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef _DEBUG
-// TODO: Why redefine a macro that is essentially equivalent to _DEBUG?
-#define STK_ENABLE_DEBUG_INFO 1
-#else
-#define STK_ENABLE_DEBUG_INFO 0
+#include "stk_hash.h"
+
+// check for debug info global override and if not then define own based on system debug flag
+#ifndef STK_ENABLE_DEBUG_INFO
+    #ifdef _DEBUG
+        // TODO: Why redefine a macro that is essentially equivalent to _DEBUG?
+        #define STK_ENABLE_DEBUG_INFO 1
+    #else
+        #define STK_ENABLE_DEBUG_INFO 0
+    #endif
 #endif
 
 /**
@@ -49,6 +54,16 @@ typedef struct __StkStackDebugInfo {
     size_t       line;         ///< line number
 } StkStackDebugInfo;
 
+/**
+ * @brief debug info builder function
+ * 
+ * @param[in] varialbeName variable name
+ * @param[in] elemTypeName stack element type name
+ * @param[in] fileName     file debug info built at name
+ * @param[in] line         line debug info constructed at
+ * 
+ * @return debug info
+ */
 inline StkStackDebugInfo
 stkBuildStackDebugInfo( const char *variableName, const char *elemTypeName, const char *fileName, size_t line ) {
     StkStackDebugInfo debugInfo = {
@@ -59,14 +74,14 @@ stkBuildStackDebugInfo( const char *variableName, const char *elemTypeName, cons
     };
 
     return debugInfo;
-}
+} // stkBuildStackDebugInfo function end
 
 /**
- * @brief stack constructor 'implementation' function
+ * @brief stack constructor
  * 
  * @param[in]  elementSize     size of single element
  * @param[in]  initialCapacity initial capacity of stack
- * @param[out] dst             destinaiton stack
+ * @param[out] dst             destinaiton stack (non-null)
  * 
  * @note this function should not be called manually
  * 
@@ -76,20 +91,20 @@ StkStatus
 __stkStackCtor( size_t elementSize, size_t initialCapacity, StkStack *dst );
 
 /**
- * @brief stack constructor 'implementation' function
+ * @brief stack constructor
  * 
  * @param[in]  elementSize     size of single element
  * @param[in]  initialCapacity initial capacity of stack
- * @param[out] dst             stack constructor destination
+ * @param[in]  debugInfo       debug information (file, line, variable name, etc.)
+ * @param[out] dst             stack constructor destination (non-null)
  * 
  * @note this function should not be called manually
  * 
  * @return stack construction status
  */
 StkStatus
-__stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo dbgInfo, StkStack *dst ); // TODO: Why have this under ifdef?
+__stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo debugInfo, StkStack *dst );
 
-#if STK_ENABLE_DEBUG_INFO // TODO: try to make your ifdefs shorter, they are hard to read
 
 /**
  * @brief stack constructor
@@ -100,27 +115,18 @@ __stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo
  * 
  * @return operation status
  */
-#define stkStackCtor(type, initialCapacity, stack) (__stkStackCtorDbg(sizeof(type), (initialCapacity), stkBuildStackDebugInfo(#stack, #type, __FILE__, __LINE__), &stack))
-
+#if STK_ENABLE_DEBUG_INFO
+    #define stkStackCtor(type, initialCapacity, stack) (__stkStackCtorDbg(sizeof(type), (initialCapacity), stkBuildStackDebugInfo(#stack, #type, __FILE__, __LINE__), &stack))
 #else
-
-/**
- * @brief stack constructor
- * 
- * @param[in]  type            type of stack value
- * @param[in]  initialCapacity stack initial capacity
- * @param[out] stack           stack (must be lvalue)
- * 
- * @return operation status
- */
-#define stkStackCtor(type, initialCapacity, stack) (__stkStackCtor(sizeof(type), (initialCapacity), &stack))
-
+    #define stkStackCtor(type, initialCapacity, stack) (__stkStackCtor(sizeof(type), (initialCapacity), &stack))
 #endif
 
 /**
  * @brief stack destructor
  * 
- * @param[in] stk stack to destroy
+ * @param[in] stk stack to destroy (should be constructed)
+ * 
+ * @return destruction status
  */
 StkStatus
 stkStackDtor( StkStack stk );
@@ -128,8 +134,8 @@ stkStackDtor( StkStack stk );
 /**
  * @brief stack value pushing function
  * 
- * @param[in,out] stk stack to push value to
- * @param[in]     src data to push
+ * @param[in,out] stk stack to push value to (non-null)
+ * @param[in]     src data to push (non-null)
  * 
  * @note src should have at least [elementSize] bytes of readable space
  * 
@@ -141,8 +147,8 @@ stkStackPush( StkStack *stk, const void *src );
 /**
  * @brief stack value popping function
  * 
- * @param[in,out] stk stack to pop value from
- * @param[out]    dst buffer to write to (should have at least [elementSize] bytes of space available for write)
+ * @param[in,out] stk stack to pop value from (non-null)
+ * @param[out]    dst buffer to write to (should be null or have at least [elementSize] bytes of space available for write)
  * 
  * @return operation status
  */

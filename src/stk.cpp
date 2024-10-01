@@ -1,3 +1,7 @@
+/**
+ * @brief stack core implementation file
+ */
+
 #include "stk.h"
 
 void
@@ -19,7 +23,7 @@ typedef struct __StkStackImpl {
     StkStackDebugInfo debugInfo;   ///< debug info
 #endif
 
-    char              data[1];     ///< data buffer // TODO: alignment, be careful?
+    uint64_t          data[1];     ///< data buffer
 } StkStackImpl;
 
 /// stack corruption
@@ -28,7 +32,7 @@ typedef enum __StkStackCorruption {
 
     STK_STACK_CORRUPTION_NULL,                    ///< invalid
     STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY, ///< size is more than capacity
-    STK_STACK_CORRUPTION_INVALID_CAPACITY,        ///< just invalid capacity
+    STK_STACK_CORRUPTION_INVALID_CAPACITY,        ///< just invalid (non-power-of-2) capacity
 } StkStackCorruption;
 
 // TODO: (don't do it if you don't have time) can you make macro named_enum(enum my_enum { a, b, c })
@@ -45,9 +49,13 @@ stkStackImplStatusStr( StkStackCorruption status ) {
 
     return "unknown";
 #undef ELEM_
-}
+} // stkStackImplStatusStr function end
 
-#if STK_ENABLE_DEBUG_INFO
+/**
+ * @brief stack debug info logging function
+ * 
+ * @param[in] dbgInfo debug info to log
+ */
 static void
 stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
     assert(dbgInfo != NULL);
@@ -57,19 +65,17 @@ stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
         dbgInfo->fileName,
         dbgInfo->line
     );
-}
-#endif
-
+} // stkLogDebugInfo function end
 
 // stack validation function
-#define STK_PROPAGATE_STACK_ERROR(stk)                     \
-    do {                                                   \
-        StkStackCorruption status = stkStackValidate(stk); \
-        if (status != STK_STACK_CORRUPTION_NOTHING) {      \
-            stkLog("STK VALIDATION ERROR. DUMP: ");        \
-            stkLogStack(stk);                              \
-            return STK_STATUS_CORRUPTED;               \
-        }                                                  \
+#define STK_PROPAGATE_STACK_ERROR(stk)                            \
+    do {                                                          \
+        StkStackCorruption status = stkStackCheckCorruption(stk); \
+        if (status != STK_STACK_CORRUPTION_NOTHING) {             \
+            stkLog("STK VALIDATION ERROR. DUMP: ");               \
+            stkLogStack(stk);                                     \
+            return STK_STATUS_CORRUPTED;                          \
+        }                                                         \
     } while (false)
 
 #define STK_PROPAGATE_BAD_ALLOC(expr)    \
@@ -81,14 +87,19 @@ stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
 
 // error propagation macro
 #define STK_PROPAGATE_ERROR_STATUS(operation)  \
-    do {                                \
-        StkStatus status = (operation); \
-        if (status != STK_STATUS_OK)    \
-            return status;              \
+    do {                                       \
+        StkStatus status = (operation);        \
+        if (status != STK_STATUS_OK)           \
+            return status;                     \
     } while (false)
 
+/**
+ * @brief stack logging function
+ * 
+ * @param[in] stk stack pointer
+ */
 static void
-stkLogStack( StkStackImpl *stk ) {
+stkLogStack( const StkStackImpl *stk ) {
     if (stk == NULL)
         stkLog("NULL");
     stkLog("\n[pointer]  : ");
@@ -126,15 +137,29 @@ stkLogStack( StkStackImpl *stk ) {
 
     if (stk->size > maxPrint)
         stkLog("\n...\n");
-}
+} // stkLogStack function end
 
+/**
+ * @brief number checking for power-of-two or zero function
+ * 
+ * @param[in] n number to check
+ * 
+ * @return true if is power of two or zero, false otherwise
+ */
 static inline bool
 stkIsPowerOfTwo( const size_t n ) {
     return (n & (n - 1)) == 0;
 } // stkIsPowerOfTwo function end
 
+/**
+ * @brief stack for corruption checking function
+ * 
+ * @param[in] stack stack to check corruption of
+ * 
+ * @return stack corruption status
+ */
 static StkStackCorruption
-stkStackValidate( StkStackImpl *stk ) {
+stkStackCheckCorruption( const StkStackImpl *stk ) {
     if (stk == NULL)
         return STK_STACK_CORRUPTION_NULL;
     if (!stkIsPowerOfTwo(stk->capacity))
@@ -142,7 +167,7 @@ stkStackValidate( StkStackImpl *stk ) {
     if (stk->capacity < stk->size)
         return STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY;
     return STK_STACK_CORRUPTION_NOTHING;
-} // stkStackValidate function end
+} // stkStackCheckCorruption function end
 
 /**
  * @brief to nearest power of two rounding function
@@ -156,23 +181,38 @@ stkRoundCapacity( size_t number ) {
     if (number == 0)
         return 0;
 
-    -- number;
+    --number;
     number |= number >> 1;
     number |= number >> 2;
     number |= number >> 4;
     number |= number >> 8;
     number |= number >> 16;
-    ++ number;
+    ++number;
 
     return number;
 } // stkRoundCapacity function end
 
+/**
+ * @brief stack reallocation function
+ * 
+ * @param[in,out] stk      stack to reallocate pointer (nullable)
+ * @param[in]     elemSize single stack element size
+ * @param[in]     capacity new stack capacity
+ * 
+ * @return reallocated stack pointer (may be null)
+ */
 static StkStackImpl *
 stkStackImplRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
     return (StkStackImpl *)realloc(stk, sizeof(StkStackImpl) + elemSize * capacity - 1);
-    // TODO: zero it out?
 } // stkStackImplRealloc function end
 
+/**
+ * @brief stack capacity extension function
+ * 
+ * @param[in,out] stk stack to extend
+ * 
+ * @return operation status
+ */
 static StkStatus
 stkStackExtend( StkStackImpl **stk ) {
     assert(stk != NULL);
@@ -185,9 +225,10 @@ stkStackExtend( StkStackImpl **stk ) {
     if (newCapacity == 0)
         newCapacity = 1;
 
-    // reallocate stack
+    // reallocate stack and propagate bad_alloc if reallocation failed
     STK_PROPAGATE_BAD_ALLOC(imp = stkStackImplRealloc(imp, imp->elementSize, newCapacity));
 
+    // zero allocated memory out
     memset(imp->data + imp->capacity * imp->elementSize, 0, imp->capacity * imp->elementSize);
     imp->capacity = newCapacity;
 
@@ -196,6 +237,15 @@ stkStackExtend( StkStackImpl **stk ) {
     return STK_STATUS_OK;
 } // stkStackExtend function end
 
+/**
+ * @brief stack shrinking function
+ * 
+ * @param[in,out] stk stack to shrink
+ * 
+ * @note stack size should be 4 times less than stack capacity for reallocation happend
+ * 
+ * @return operation status
+ */
 static StkStatus
 stkStackShrink( StkStackImpl **stk ) {
     assert(stk != NULL);
@@ -213,8 +263,6 @@ stkStackShrink( StkStackImpl **stk ) {
 
     return STK_STATUS_OK;
 } // stkStackShrink function end
-
-
 
 StkStatus
 __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack *const dst ) {
@@ -247,7 +295,7 @@ __stkStackCtorDbg(
     const size_t      elementSize,
     const size_t      initialCapacity,
     StkStackDebugInfo debugInfo,
-    StkStack *const   dst // TODO: the only shortened name? 
+    StkStack *const   dst
 ) {
     assert(dst != NULL);
 
@@ -288,7 +336,6 @@ stkStackPush( StkStack *const stk, const void *const src ) {
 StkStatus
 stkStackPop( StkStack *const stk, void *dst ) {
     assert(stk != NULL);
-    assert(dst != NULL);
 
     StkStackImpl *imp = *stk;
 
@@ -301,7 +348,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
 
     imp->size -= 1;
 
-    if (imp->elementSize != 0)
+    if (dst != NULL && imp->elementSize != 0)
         memcpy(dst, imp->data + imp->size * imp->elementSize, imp->elementSize);
 
     if (imp->size < imp->capacity / 4) {
