@@ -4,6 +4,33 @@
 
 #include "stk.h"
 
+/// @brief debug data holder
+static struct {
+    bool     isInitialized;  ///< debug context initialization flag
+    uint32_t headingCanary;  ///< heading canary value
+    uint32_t trailingCanary; ///< trailing canary value
+} STK_debugContext = {
+    .isInitialized = false,
+    .headingCanary = 0,
+    .trailingCanary = 0,
+};
+
+/**
+ * @brief debug context initialization function
+ */
+void
+stkInitDebugContext( void ) {
+    if (!STK_debugContext.isInitialized) {
+        time_t now = time(NULL);
+
+        srand(now);
+
+        STK_debugContext.isInitialized  = true;
+        STK_debugContext.headingCanary  = ((uint32_t)rand() << 16) | rand();
+        STK_debugContext.trailingCanary = ((uint32_t)rand() << 16) | rand();
+    }
+} // stkInitDebugContext function end
+
 void
 stkLog( const char *fstr, ... ) {
     va_list args;
@@ -13,42 +40,121 @@ stkLog( const char *fstr, ... ) {
     va_end(args);
 } // stkLog function end
 
+/**
+ * @brief 32-bit memset function
+ * 
+ * @param[out] memory memory block to fill
+ * @param[in]  value  value to fill block by
+ * @param[in]  count  count of values to write to memory
+ */
+static void
+stkFillMemory32( void *const memory, const uint32_t value, const size_t count ) {
+    // Check memory alignment
+    assert((size_t)memory % 4 == 0);
+
+    uint32_t *ptr = (uint32_t *)memory;
+    const uint32_t *const end = ptr + count;
+
+    while (ptr != end)
+        *ptr++ = value;
+} // stkSetMemory32 function end
+
+/// @brief count of canaries
+#define STK_CANARY_COUNT 8
+
 /// stack internal structure
 typedef struct __StkStackImpl {
-    size_t            elementSize; ///< size of single data entry // TODO: size_t for element size, isn't that wasteful?
-    size_t            size;        ///< size (in entries)
-    size_t            capacity;    ///< capacity (in entries)
-
-#if STK_ENABLE_DEBUG_INFO
-    StkStackDebugInfo debugInfo;   ///< debug info
+#if STK_ENABLE_CANARIES
+    uint32_t          __headingCanaries[STK_CANARY_COUNT];  ///< heading canaries
 #endif
 
-    uint64_t          data[1];     ///< data buffer
+#if STK_ENABLE_HASHING
+    void *            __hashThis;                           ///< this pointer
+    StkHash           __hash;                               ///< stack hash
+#endif
+
+    size_t            elementSize;                          ///< size of single data entry // TODO: size_t for element size, isn't that wasteful?
+    size_t            size;                                 ///< size (in entries)
+    size_t            capacity;                             ///< capacity (in entries)
+
+#if STK_ENABLE_DEBUG_INFO
+    StkStackDebugInfo __debugInfo;                          ///< debug info
+#endif
+
+#if STK_ENABLE_CANARIES
+    uint32_t          __trailingCanaries[STK_CANARY_COUNT]; ///< canaries at end of stack head
+#endif
+
+    uint64_t          data[1];                              ///< data buffer
 } StkStackImpl;
+
+
+#if STK_ENABLE_HASHING
+/**
+ * @brief stack hash recalculation function
+ * 
+ * @param stk stack to recalculate hash for pointer
+ */
+void
+stkStackRecalculateHash( StkStackImpl *const stk ) {
+    assert(stk != NULL);
+
+    memset(&stk->__hash, 0, sizeof(StkHash));
+    stk->__hashThis = stk;
+    stk->__hash = stkHash(stk, sizeof(StkStackImpl));
+} // stkStackRecalculateHash function end
+
+/**
+ * @brief stack hash validness checking function
+ * 
+ * @param[in] stk stack to check hash of
+ * 
+ * @return true if hash is valid, false otehrwise
+ */
+bool
+stkStackCheckHash( const StkStackImpl *const stk ) {
+    assert(stk != NULL);
+
+    StkHash oldHash = stk->__hash;
+
+    // a bit of 'unsafe' core here...
+    memset((StkStackImpl *)&stk->__hash, 0, sizeof(StkHash));
+    StkHash newHash = stkHash(stk, sizeof(StkStackImpl));
+    ((StkStackImpl *)stk)->__hash = oldHash;
+
+    return stkHashCompare(&oldHash, &newHash);
+} // stkStackCheckHash function end
+
+#endif
 
 /// stack corruption
 typedef enum __StkStackCorruption {
-    STK_STACK_CORRUPTION_NOTHING,                 ///< all's ok
+    STK_STACK_CORRUPTION_NULL                              = 0x00000001, ///< invalid
+    STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY           = 0x00000002, ///< size is more than capacity
+    STK_STACK_CORRUPTION_INVALID_CAPACITY                  = 0x00000004, ///< just invalid (non-power-of-2) capacity
+    STK_STACK_CORRUPTION_INVALID_HASH                      = 0x00000008, ///< invalid hash value
 
-    STK_STACK_CORRUPTION_NULL,                    ///< invalid
-    STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY, ///< size is more than capacity
-    STK_STACK_CORRUPTION_INVALID_CAPACITY,        ///< just invalid (non-power-of-2) capacity
-} StkStackCorruption;
+    STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY               = 0x00000010, ///< damaged left canary
+    STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY              = 0x00000020, ///< damaged right canary
+} StkStackCorruptionBits;
+
+/// @brief corruption
+typedef uint32_t StkStackCorruption;
+
+/// @brief No stack corruption
+const uint32_t STK_STACK_CORRUPTION_NOTHING = (StkStackCorruption)0;
 
 // TODO: (don't do it if you don't have time) can you make macro named_enum(enum my_enum { a, b, c })
 //       so that named_enum_get_name(my_enum, expression that contains value (a)) // => "a"
-const char *
-stkStackImplStatusStr( StkStackCorruption status ) {
-#define ELEM_(c) case c: return #c
-    switch (status) {
-    ELEM_(STK_STACK_CORRUPTION_NOTHING                );
-    ELEM_(STK_STACK_CORRUPTION_NULL                   );
-    ELEM_(STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY);
-    ELEM_(STK_STACK_CORRUPTION_INVALID_CAPACITY       );
-    }
-
-    return "unknown";
-#undef ELEM_
+void
+stkLogStackCorruption( StkStackCorruption corruption ) {
+    stkLog("|");
+    if (corruption & STK_STACK_CORRUPTION_NULL                          ) stkLog(" invalid |");
+    if (corruption & STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY       ) stkLog(" size is more than capacity |");
+    if (corruption & STK_STACK_CORRUPTION_INVALID_CAPACITY              ) stkLog(" just invalid (non-power-of-2) capacity |");
+    if (corruption & STK_STACK_CORRUPTION_INVALID_HASH                  ) stkLog(" invalid hash value |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY           ) stkLog(" damaged left canary |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY          ) stkLog(" damaged right canary |");
 } // stkStackImplStatusStr function end
 
 /**
@@ -72,7 +178,10 @@ stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
     do {                                                          \
         StkStackCorruption status = stkStackCheckCorruption(stk); \
         if (status != STK_STACK_CORRUPTION_NOTHING) {             \
-            stkLog("STK VALIDATION ERROR. DUMP: ");               \
+            stkLog("\nSTK VALIDATION ERROR.");                    \
+            stkLog("\n    CORRUPTION STATUS: ");                  \
+            stkLogStackCorruption(status);                        \
+            stkLog("\n    DUMP: ");                               \
             stkLogStack(stk);                                     \
             return STK_STATUS_CORRUPTED;                          \
         }                                                         \
@@ -114,7 +223,7 @@ stkLogStack( const StkStackImpl *stk ) {
 
 #if STK_ENABLE_DEBUG_INFO
     stkLog("\ndebug info : ");
-    stkLogDebugInfo(&stk->debugInfo);
+    stkLogDebugInfo(&stk->__debugInfo);
 #endif
 
     stkLog("\ndata       : [%d elements by %p address]", stk->size, stk->data);
@@ -160,13 +269,37 @@ stkIsPowerOfTwo( const size_t n ) {
  */
 static StkStackCorruption
 stkStackCheckCorruption( const StkStackImpl *stk ) {
+    StkStackCorruption corruption = STK_STACK_CORRUPTION_NOTHING;
+
     if (stk == NULL)
-        return STK_STACK_CORRUPTION_NULL;
+        return corruption;
+
     if (!stkIsPowerOfTwo(stk->capacity))
-        return STK_STACK_CORRUPTION_INVALID_CAPACITY;
+        corruption |=  STK_STACK_CORRUPTION_INVALID_CAPACITY;
     if (stk->capacity < stk->size)
-        return STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY;
-    return STK_STACK_CORRUPTION_NOTHING;
+        corruption |=  STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY;
+
+#if STK_ENABLE_CANARIES
+    for (uint32_t i = 0; i < STK_CANARY_COUNT; i++)
+        if (stk->__headingCanaries[i] != STK_debugContext.headingCanary) {
+            corruption |= STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY;
+            break;
+        }
+
+    for (uint32_t i = 0; i < STK_CANARY_COUNT; i++)
+        if (stk->__trailingCanaries[i] != STK_debugContext.trailingCanary) {
+            corruption |= STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY;
+            break;
+        }
+#endif
+
+#if STK_ENABLE_HASHING
+    if (!stkStackCheckHash(stk)) {
+        corruption |= STK_STACK_CORRUPTION_INVALID_HASH;
+    }
+#endif
+
+    return corruption;
 } // stkStackCheckCorruption function end
 
 /**
@@ -266,6 +399,8 @@ stkStackShrink( StkStackImpl **stk ) {
 
 StkStatus
 __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack *const dst ) {
+    stkInitDebugContext();
+
     assert(dst != NULL);
 
     // calculate power-of-two capacity
@@ -282,6 +417,16 @@ __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack
         .size = 0,
         .capacity = capacity,
     };
+
+    // fill 
+#if STK_ENABLE_CANARIES
+    stkFillMemory32(&stk->__headingCanaries,  STK_debugContext.headingCanary,  8);
+    stkFillMemory32(&stk->__trailingCanaries, STK_debugContext.trailingCanary, 8);
+#endif
+
+#if STK_ENABLE_HASHING
+    stkStackRecalculateHash(stk);
+#endif
 
     STK_PROPAGATE_STACK_ERROR(stk);
 
@@ -302,7 +447,11 @@ __stkStackCtorDbg(
     STK_PROPAGATE_ERROR_STATUS(__stkStackCtor(elementSize, initialCapacity, dst));
 
 #if STK_ENABLE_DEBUG_INFO
-    (*dst)->debugInfo = debugInfo;
+    (*dst)->__debugInfo = debugInfo;
+#endif
+
+#if STK_ENABLE_HASHING
+    stkStackRecalculateHash(*dst);
 #endif
 
     return STK_STATUS_OK;
@@ -327,6 +476,10 @@ stkStackPush( StkStack *const stk, const void *const src ) {
     if (imp->elementSize != 0)
         memcpy(imp->data + imp->size * imp->elementSize, src, imp->elementSize);
     imp->size += 1;
+
+#if STK_ENABLE_HASHING
+    stkStackRecalculateHash(imp);
+#endif
 
     STK_PROPAGATE_STACK_ERROR(imp);
 
@@ -355,6 +508,10 @@ stkStackPop( StkStack *const stk, void *dst ) {
         STK_PROPAGATE_ERROR_STATUS(stkStackShrink(&imp));
         *stk = imp;
     }
+
+#if STK_ENABLE_HASHING
+    stkStackRecalculateHash(imp);
+#endif
 
     STK_PROPAGATE_STACK_ERROR(imp);
 

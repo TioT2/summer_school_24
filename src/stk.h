@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,13 +17,17 @@
 #include "stk_hash.h"
 
 // check for debug info global override and if not then define own based on system debug flag
-#ifndef STK_ENABLE_DEBUG_INFO
+#ifndef STK_OVERRIDE_CONFIG
     #ifdef _DEBUG
         // TODO: Why redefine a macro that is essentially equivalent to _DEBUG?
-        #define STK_ENABLE_DEBUG_INFO 1
+        #define STK_DEFAULT_DEBUG 1
     #else
-        #define STK_ENABLE_DEBUG_INFO 0
+        #define STK_DEFAULT_DEBUG 0
     #endif
+
+    #define STK_ENABLE_DEBUG_INFO STK_DEFAULT_DEBUG
+    #define STK_ENABLE_CANARIES   STK_DEFAULT_DEBUG
+    #define STK_ENABLE_HASHING    STK_DEFAULT_DEBUG
 #endif
 
 /**

@@ -17,4 +17,7 @@ add_executable (ss_stk  ${ss_stk_src})
 
 set_property(TARGET ss_stk PROPERTY CXX_STANDARD 20)
 
+# TODO: sh*tcode
+add_compile_definitions(TARGET ss_stk _DEBUG)
+
 # CMakeLists.txt file end

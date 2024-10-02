@@ -26,6 +26,17 @@ typedef struct __StkHash {
 StkHash
 stkHash( const void *data, const size_t size );
 
+/**
+ * @brief hash comparison function
+ * 
+ * @param[in] lhs first hash
+ * @param[in] rhs second hash
+ * 
+ * @return true if lhs and rhs hashes are same
+ */
+bool
+stkHashCompare( const StkHash *lhs, const StkHash *rhs );
+
 #endif // !defined(STK_HASH_H_)
 
 // stk_hash.h file end

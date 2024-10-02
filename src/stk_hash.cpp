@@ -181,4 +181,9 @@ stkHash( const void *data, const size_t size ) {
     return hash.result;
 } // stkHash function end
 
+bool
+stkHashCompare( const StkHash *lhs, const StkHash *rhs ) {
+    return 0 == memcmp(lhs, rhs, sizeof(StkHash));
+} // stkHashCompare function end
+
 // stk_hash.cpp file end
