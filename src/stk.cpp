@@ -9,6 +9,7 @@ static struct {
     bool     isInitialized;  ///< debug context initialization flag
     uint32_t headingCanary;  ///< heading canary value
     uint32_t trailingCanary; ///< trailing canary value
+    uint32_t dataCanary;     ///< data block canary value
 } STK_debugContext = {
     .isInitialized = false,
     .headingCanary = 0,
@@ -28,6 +29,7 @@ stkInitDebugContext( void ) {
         STK_debugContext.isInitialized  = true;
         STK_debugContext.headingCanary  = ((uint32_t)rand() << 16) | rand();
         STK_debugContext.trailingCanary = ((uint32_t)rand() << 16) | rand();
+        STK_debugContext.dataCanary     = ((uint32_t)rand() << 16) | rand();
     }
 } // stkInitDebugContext function end
 
@@ -136,7 +138,8 @@ typedef enum __StkStackCorruption {
 
     STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY               = 0x00000010, ///< damaged left canary
     STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY              = 0x00000020, ///< damaged right canary
-} StkStackCorruptionBits;
+    STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY               = 0x00000040, ///< damaged canary located after data block
+} StkStackCorruptionBit;
 
 /// @brief corruption
 typedef uint32_t StkStackCorruption;
@@ -155,6 +158,7 @@ stkLogStackCorruption( StkStackCorruption corruption ) {
     if (corruption & STK_STACK_CORRUPTION_INVALID_HASH                  ) stkLog(" invalid hash value |");
     if (corruption & STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY           ) stkLog(" damaged left canary |");
     if (corruption & STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY          ) stkLog(" damaged right canary |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY           ) stkLog(" damaged data canary |");
 } // stkStackImplStatusStr function end
 
 /**
@@ -241,7 +245,7 @@ stkLogStack( const StkStackImpl *stk ) {
     for (size_t elemIndex = 0; elemIndex < printCount; elemIndex++) {
         stkLog("\n%2d: ", elemIndex);
         for (size_t byteIndex = 0; byteIndex < stk->elementSize; byteIndex++)
-            stkLog("%02X", (unsigned int)(unsigned char)stk->data[elemIndex * stk->elementSize + byteIndex]);
+            stkLog("%02X", (unsigned int)(uint8_t)((const uint8_t *)stk->data)[elemIndex * stk->elementSize + byteIndex]);
     }
 
     if (stk->size > maxPrint)
@@ -261,6 +265,35 @@ stkIsPowerOfTwo( const size_t n ) {
 } // stkIsPowerOfTwo function end
 
 /**
+ * @brief size alignment function
+ * 
+ * @param[in] size      size to align
+ * @param[in] alignment alignment (non-zero)
+ * 
+ * @return size aligned to greater or equal
+ */
+static size_t
+stkSizeAlignUp( const size_t size, const size_t alignment ) {
+    assert(alignment > 0);
+    if (size % alignment == 0)
+        return size;
+    return size + alignment - size % alignment;
+} // stkSizeAlignUp function end
+
+/**
+ * @brief canary offset getting function
+ * 
+ * @param[in] elementSize stack element size
+ * @param[in] capacity    stack capacity
+ * 
+ * @return offset of data canary in data array
+ */
+static size_t
+stkStackGetDataCanaryOffset( size_t elementSize, size_t capacity ) {
+    return stkSizeAlignUp(elementSize * capacity, sizeof(uint32_t));
+} // stkStackGetDataCanaryOffset function end
+
+/**
  * @brief stack for corruption checking function
  * 
  * @param[in] stack stack to check corruption of
@@ -272,7 +305,7 @@ stkStackCheckCorruption( const StkStackImpl *stk ) {
     StkStackCorruption corruption = STK_STACK_CORRUPTION_NOTHING;
 
     if (stk == NULL)
-        return corruption;
+        return corruption | STK_STACK_CORRUPTION_NULL;
 
     if (!stkIsPowerOfTwo(stk->capacity))
         corruption |=  STK_STACK_CORRUPTION_INVALID_CAPACITY;
@@ -280,17 +313,27 @@ stkStackCheckCorruption( const StkStackImpl *stk ) {
         corruption |=  STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY;
 
 #if STK_ENABLE_CANARIES
-    for (uint32_t i = 0; i < STK_CANARY_COUNT; i++)
-        if (stk->__headingCanaries[i] != STK_debugContext.headingCanary) {
-            corruption |= STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY;
-            break;
-        }
+    struct __StkCanaryInfo {
+        StkStackCorruptionBit corruptionBit;
+        uint32_t expectedCanary;
+        const uint32_t *canaries;
+    } canaryInfos[] = {
+        {STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY,  STK_debugContext.headingCanary , stk->__headingCanaries},
+        {STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY, STK_debugContext.trailingCanary, stk->__trailingCanaries},
+        {STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY,  STK_debugContext.dataCanary    , (const uint32_t *)((const uint8_t *)stk->data + stkStackGetDataCanaryOffset(stk->elementSize, stk->capacity))},
+    };
 
-    for (uint32_t i = 0; i < STK_CANARY_COUNT; i++)
-        if (stk->__trailingCanaries[i] != STK_debugContext.trailingCanary) {
-            corruption |= STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY;
-            break;
+    for (uint32_t canaryInfoIndex = 0; canaryInfoIndex < sizeof(canaryInfos) / sizeof(canaryInfos[0]); canaryInfoIndex++) {
+        struct __StkCanaryInfo *info = canaryInfos + canaryInfoIndex;
+        bool doContinue = true;
+
+        for (uint32_t i = 0; doContinue && i < STK_CANARY_COUNT; i++) {
+            if (info->canaries[i] != info->expectedCanary) {
+                corruption |= info->corruptionBit;
+                doContinue = false;
+            }
         }
+    }
 #endif
 
 #if STK_ENABLE_HASHING
@@ -335,9 +378,35 @@ stkRoundCapacity( size_t number ) {
  * @return reallocated stack pointer (may be null)
  */
 static StkStackImpl *
-stkStackImplRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
-    return (StkStackImpl *)realloc(stk, sizeof(StkStackImpl) + elemSize * capacity - 1);
-} // stkStackImplRealloc function end
+stkStackRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
+    // align data block
+
+    size_t dataBlockSize;
+    if (capacity == 0) {
+        dataBlockSize = 0;
+    } else {
+        dataBlockSize = elemSize * capacity;
+    }
+
+#if STK_ENABLE_CANARIES
+    dataBlockSize = stkSizeAlignUp(dataBlockSize, 4);
+    dataBlockSize += STK_CANARY_COUNT * sizeof(uint32_t);
+#endif
+
+    StkStackImpl *impl = (StkStackImpl *)realloc(stk, sizeof(StkStackImpl) + dataBlockSize - sizeof(stk->data));
+
+#if STK_ENABLE_CANARIES
+    {
+        size_t offset = stkStackGetDataCanaryOffset(elemSize, capacity);
+
+        uint32_t *canary = (uint32_t *)((uint8_t *)impl->data + offset);
+        for (size_t i = 0; i < STK_CANARY_COUNT; i++)
+            canary[i] = STK_debugContext.dataCanary;
+    }
+#endif
+
+    return impl;
+} // stkStackRealloc function end
 
 /**
  * @brief stack capacity extension function
@@ -359,10 +428,10 @@ stkStackExtend( StkStackImpl **stk ) {
         newCapacity = 1;
 
     // reallocate stack and propagate bad_alloc if reallocation failed
-    STK_PROPAGATE_BAD_ALLOC(imp = stkStackImplRealloc(imp, imp->elementSize, newCapacity));
+    STK_PROPAGATE_BAD_ALLOC(imp = stkStackRealloc(imp, imp->elementSize, newCapacity));
 
     // zero allocated memory out
-    memset(imp->data + imp->capacity * imp->elementSize, 0, imp->capacity * imp->elementSize);
+    memset((uint8_t *)imp->data + imp->capacity * imp->elementSize, 0, imp->capacity * imp->elementSize);
     imp->capacity = newCapacity;
 
     *stk = imp;
@@ -388,7 +457,7 @@ stkStackShrink( StkStackImpl **stk ) {
     assert(imp->capacity > imp->size * 4);
 
     size_t newCapacity = imp->capacity / 4;
-    STK_PROPAGATE_BAD_ALLOC(imp = stkStackImplRealloc(imp, imp->elementSize, newCapacity));
+    STK_PROPAGATE_BAD_ALLOC(imp = stkStackRealloc(imp, imp->elementSize, newCapacity));
     // TODO: poison shrunk part?
     imp->capacity = newCapacity;
 
@@ -408,15 +477,13 @@ __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack
     StkStackImpl *stk;
 
     // check allocation
-    STK_PROPAGATE_BAD_ALLOC(stk = stkStackImplRealloc(NULL, elementSize, capacity));
+    STK_PROPAGATE_BAD_ALLOC(stk = stkStackRealloc(NULL, elementSize, capacity));
 
-    memset(stk, 0, sizeof(StkStackImpl) + elementSize * capacity);
+    memset(stk, 0, sizeof(StkStackImpl) + elementSize * capacity - sizeof(stk->data));
 
-    *stk = {
-        .elementSize = elementSize,
-        .size = 0,
-        .capacity = capacity,
-    };
+    stk->elementSize = elementSize;
+    stk->size = 0;
+    stk->capacity = capacity;
 
     // fill 
 #if STK_ENABLE_CANARIES
@@ -474,7 +541,7 @@ stkStackPush( StkStack *const stk, const void *const src ) {
 
     // actually, copy element
     if (imp->elementSize != 0)
-        memcpy(imp->data + imp->size * imp->elementSize, src, imp->elementSize);
+        memcpy((uint8_t *)imp->data + imp->size * imp->elementSize, src, imp->elementSize);
     imp->size += 1;
 
 #if STK_ENABLE_HASHING
@@ -502,7 +569,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
     imp->size -= 1;
 
     if (dst != NULL && imp->elementSize != 0)
-        memcpy(dst, imp->data + imp->size * imp->elementSize, imp->elementSize);
+        memcpy(dst, (uint8_t *)imp->data + imp->size * imp->elementSize, imp->elementSize);
 
     if (imp->size < imp->capacity / 4) {
         STK_PROPAGATE_ERROR_STATUS(stkStackShrink(&imp));
