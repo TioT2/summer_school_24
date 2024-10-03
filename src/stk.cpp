@@ -5,7 +5,7 @@
 #include "stk.h"
 
 /// @brief debug data holder
-static struct {
+struct __StkDebugContext {
     bool     isInitialized;  ///< debug context initialization flag
     uint32_t headingCanary;  ///< heading canary value
     uint32_t trailingCanary; ///< trailing canary value
@@ -32,6 +32,9 @@ stkInitDebugContext( void ) {
         STK_debugContext.dataCanary     = ((uint32_t)rand() << 16) | rand();
     }
 } // stkInitDebugContext function end
+
+/// Debug context initialization guard
+#define STK_DEBUG_CONTEXT_GUARD do { stkInitDebugContext(); } while (0)
 
 void
 stkLog( const char *fstr, ... ) {
@@ -97,7 +100,7 @@ typedef struct __StkStackImpl {
  * 
  * @param stk stack to recalculate hash for pointer
  */
-void
+static void
 stkStackRecalculateHash( StkStackImpl *const stk ) {
     assert(stk != NULL);
 
@@ -113,7 +116,7 @@ stkStackRecalculateHash( StkStackImpl *const stk ) {
  * 
  * @return true if hash is valid, false otehrwise
  */
-bool
+static bool
 stkStackCheckHash( const StkStackImpl *const stk ) {
     assert(stk != NULL);
 
@@ -149,7 +152,7 @@ const uint32_t STK_STACK_CORRUPTION_NOTHING = (StkStackCorruption)0;
 
 // TODO: (don't do it if you don't have time) can you make macro named_enum(enum my_enum { a, b, c })
 //       so that named_enum_get_name(my_enum, expression that contains value (a)) // => "a"
-void
+static void
 stkLogStackCorruption( StkStackCorruption corruption ) {
     stkLog("|");
     if (corruption & STK_STACK_CORRUPTION_NULL                          ) stkLog(" invalid |");
@@ -314,9 +317,9 @@ stkStackCheckCorruption( const StkStackImpl *stk ) {
 
 #if STK_ENABLE_CANARIES
     struct __StkCanaryInfo {
-        StkStackCorruptionBit corruptionBit;
-        uint32_t expectedCanary;
-        const uint32_t *canaries;
+        StkStackCorruptionBit  corruptionBit;
+        uint32_t               expectedCanary;
+        const uint32_t        *canaries;
     } canaryInfos[] = {
         {STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY,  STK_debugContext.headingCanary , stk->__headingCanaries},
         {STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY, STK_debugContext.trailingCanary, stk->__trailingCanaries},
@@ -337,9 +340,8 @@ stkStackCheckCorruption( const StkStackImpl *stk ) {
 #endif
 
 #if STK_ENABLE_HASHING
-    if (!stkStackCheckHash(stk)) {
+    if (!stkStackCheckHash(stk))
         corruption |= STK_STACK_CORRUPTION_INVALID_HASH;
-    }
 #endif
 
     return corruption;
@@ -382,11 +384,10 @@ stkStackRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
     // align data block
 
     size_t dataBlockSize;
-    if (capacity == 0) {
+    if (capacity == 0)
         dataBlockSize = 0;
-    } else {
+    else
         dataBlockSize = elemSize * capacity;
-    }
 
 #if STK_ENABLE_CANARIES
     dataBlockSize = stkSizeAlignUp(dataBlockSize, 4);
@@ -468,7 +469,7 @@ stkStackShrink( StkStackImpl **stk ) {
 
 StkStatus
 __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack *const dst ) {
-    stkInitDebugContext();
+    STK_DEBUG_CONTEXT_GUARD;
 
     assert(dst != NULL);
 
@@ -555,6 +556,8 @@ stkStackPush( StkStack *const stk, const void *const src ) {
 
 StkStatus
 stkStackPop( StkStack *const stk, void *dst ) {
+    STK_DEBUG_CONTEXT_GUARD;
+
     assert(stk != NULL);
 
     StkStackImpl *imp = *stk;
@@ -587,6 +590,8 @@ stkStackPop( StkStack *const stk, void *dst ) {
 
 StkStatus
 stkStackDtor( StkStack stk ) {
+    STK_DEBUG_CONTEXT_GUARD;
+
     STK_PROPAGATE_STACK_ERROR(stk);
     free(stk); // TODO: idempotent destructor? free(stk), stk = {};
     return STK_STATUS_OK;

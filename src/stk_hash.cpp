@@ -145,7 +145,7 @@ stkHash( const void *data, const size_t size ) {
     };
 
     const size_t lastPackByteCount = size % 64;
-    const size_t packCount = size - lastPackByteCount;
+    const size_t packCount = size / 64;
     for (size_t packIndex = 0; packIndex < packCount; packIndex++)
         stkHashStep(&hash.context, (uint32_t *)data + packIndex * 64);
 

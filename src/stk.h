@@ -25,6 +25,7 @@
         #define STK_DEFAULT_DEBUG 0
     #endif
 
+    // Define to same with debuggingg flag
     #define STK_ENABLE_DEBUG_INFO STK_DEFAULT_DEBUG
     #define STK_ENABLE_CANARIES   STK_DEFAULT_DEBUG
     #define STK_ENABLE_HASHING    STK_DEFAULT_DEBUG
@@ -49,7 +50,6 @@ typedef enum __StkStatus {
     STK_STATUS_CORRUPTED, ///< invalid stack (null/...)
     STK_STATUS_POP_ERROR, ///< no elements to pop
 } StkStatus;
-
 
 /// Debug info representation structure
 typedef struct __StkStackDebugInfo {

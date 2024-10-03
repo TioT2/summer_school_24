@@ -2,11 +2,11 @@
 
 int
 main( void ) {
-    StkStack stack = NULL;
+    StkStack stack;
 
     stkStackCtor(int, 0, stack);
 
-    int temp = 0; // TODO: t? not convinced
+    int temp = 0;
 
     temp = 3; stkStackPush(&stack, &temp);
     temp = 1; stkStackPush(&stack, &temp);
@@ -29,3 +29,4 @@ main( void ) {
 } // main function end
 
 // main.cpp function end
+
