@@ -13,7 +13,7 @@
             "args": [],
             "externalConsole": false,
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceRoot}",
             "environment": [],
             "MIMode": "gdb",
             "setupCommands": [

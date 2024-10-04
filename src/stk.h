@@ -19,16 +19,14 @@
 // check for debug info global override and if not then define own based on system debug flag
 #ifndef STK_OVERRIDE_CONFIG
     #ifdef _DEBUG
-        // TODO: Why redefine a macro that is essentially equivalent to _DEBUG?
-        #define STK_DEFAULT_DEBUG 1
-    #else
-        #define STK_DEFAULT_DEBUG 0
-    #endif
+        // enable all debug checks
 
-    // Define to same with debuggingg flag
-    #define STK_ENABLE_DEBUG_INFO STK_DEFAULT_DEBUG
-    #define STK_ENABLE_CANARIES   STK_DEFAULT_DEBUG
-    #define STK_ENABLE_HASHING    STK_DEFAULT_DEBUG
+        #define STK_ENABLE_CORRUPTION_CHECKS
+        #define STK_ENABLE_DEBUG_INFO
+        #define STK_ENABLE_CANARIES
+        #define STK_ENABLE_HASHING
+        #define STK_ENABLE_POISONING
+    #endif
 #endif
 
 /**
@@ -120,7 +118,7 @@ __stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo
  * 
  * @return operation status
  */
-#if STK_ENABLE_DEBUG_INFO
+#ifdef STK_ENABLE_DEBUG_INFO
     #define stkStackCtor(type, initialCapacity, stack) (__stkStackCtorDbg(sizeof(type), (initialCapacity), stkBuildStackDebugInfo(#stack, #type, __FILE__, __LINE__), &stack))
 #else
     #define stkStackCtor(type, initialCapacity, stack) (__stkStackCtor(sizeof(type), (initialCapacity), &stack))
@@ -131,10 +129,23 @@ __stkStackCtorDbg( size_t elementSize, size_t initialCapacity, StkStackDebugInfo
  * 
  * @param[in] stk stack to destroy (should be constructed)
  * 
+ * @note this function should not be called manually
+ * 
  * @return destruction status
  */
 StkStatus
-stkStackDtor( StkStack stk );
+__stkStackDtor( StkStack *stk );
+
+/**
+ * @brief stack destructor
+ * 
+ * @param[in] stk stack to destroy (should be constructed)
+ * 
+ * @note this function should not be called manually
+ * 
+ * @return destruction status
+ */
+#define stkStackDtor(stack) (__stkStackDtor(&stack))
 
 /**
  * @brief stack value pushing function

@@ -147,13 +147,13 @@ stkHash( const void *data, const size_t size ) {
     const size_t lastPackByteCount = size % 64;
     const size_t packCount = size / 64;
     for (size_t packIndex = 0; packIndex < packCount; packIndex++)
-        stkHashStep(&hash.context, (uint32_t *)data + packIndex * 64);
+        stkHashStep(&hash.context, (uint32_t *)data + packIndex * 16);
 
     // build last batch
     uint8_t lastBatch[64] = {0};
 
     // copy last bytes
-    memcpy(lastBatch, (uint32_t *)data + packCount * 64, lastPackByteCount);
+    memcpy(lastBatch, (uint32_t *)data + packCount * 16, lastPackByteCount);
 
     // add one
     lastBatch[lastPackByteCount] = 128;

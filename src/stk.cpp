@@ -4,8 +4,12 @@
 
 #include "stk.h"
 
+#ifdef STK_ENABLE_CANARIES
+    #define STK_ENABLE_DEBUG_CONTEXT
+#endif
+
 /// @brief debug data holder
-struct __StkDebugContext {
+static struct __StkDebugContext {
     bool     isInitialized;  ///< debug context initialization flag
     uint32_t headingCanary;  ///< heading canary value
     uint32_t trailingCanary; ///< trailing canary value
@@ -19,7 +23,7 @@ struct __StkDebugContext {
 /**
  * @brief debug context initialization function
  */
-void
+static void
 stkInitDebugContext( void ) {
     if (!STK_debugContext.isInitialized) {
         time_t now = time(NULL);
@@ -33,8 +37,12 @@ stkInitDebugContext( void ) {
     }
 } // stkInitDebugContext function end
 
-/// Debug context initialization guard
-#define STK_DEBUG_CONTEXT_GUARD do { stkInitDebugContext(); } while (0)
+/// debug context initialization guard
+#ifdef STK_ENABLE_DEBUG_CONTEXT
+    #define STK_DEBUG_CONTEXT_GUARD do { stkInitDebugContext(); } while (false)
+#else
+    #define STK_DEBUG_CONTEXT_GUARD do {  } while (false)
+#endif // defined(STK_ENABLE_DEBUG_CONTEXT)
 
 void
 stkLog( const char *fstr, ... ) {
@@ -69,11 +77,11 @@ stkFillMemory32( void *const memory, const uint32_t value, const size_t count ) 
 
 /// stack internal structure
 typedef struct __StkStackImpl {
-#if STK_ENABLE_CANARIES
+#ifdef STK_ENABLE_CANARIES
     uint32_t          __headingCanaries[STK_CANARY_COUNT];  ///< heading canaries
 #endif
 
-#if STK_ENABLE_HASHING
+#ifdef STK_ENABLE_HASHING
     void *            __hashThis;                           ///< this pointer
     StkHash           __hash;                               ///< stack hash
 #endif
@@ -82,19 +90,35 @@ typedef struct __StkStackImpl {
     size_t            size;                                 ///< size (in entries)
     size_t            capacity;                             ///< capacity (in entries)
 
-#if STK_ENABLE_DEBUG_INFO
+#ifdef STK_ENABLE_DEBUG_INFO
     StkStackDebugInfo __debugInfo;                          ///< debug info
 #endif
 
-#if STK_ENABLE_CANARIES
+#ifdef STK_ENABLE_CANARIES
     uint32_t          __trailingCanaries[STK_CANARY_COUNT]; ///< canaries at end of stack head
 #endif
 
     uint64_t          data[1];                              ///< data buffer
 } StkStackImpl;
 
+/// 32-bit allocation poison value
+const uint32_t STK_ALLOCATION_POISON32 = (uint32_t)0xDEDC0DE;
 
-#if STK_ENABLE_HASHING
+/**
+ * @brief stack poisoning function
+ * 
+ * @param stack stack to poison pointer (stack is assumed to be valid)
+ */
+static void
+stkStackPoison( StkStackImpl *const stk ) {
+    assert(stk != NULL);
+
+    size_t size = (sizeof(StkStack) + stk->capacity * stk->elementSize - sizeof(stk->data)) / 4;
+
+    stkFillMemory32(stk->data, STK_ALLOCATION_POISON32, size);
+} // stkStackPoison function end
+
+#ifdef STK_ENABLE_HASHING
 /**
  * @brief stack hash recalculation function
  * 
@@ -134,14 +158,15 @@ stkStackCheckHash( const StkStackImpl *const stk ) {
 
 /// stack corruption
 typedef enum __StkStackCorruption {
-    STK_STACK_CORRUPTION_NULL                              = 0x00000001, ///< invalid
-    STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY           = 0x00000002, ///< size is more than capacity
-    STK_STACK_CORRUPTION_INVALID_CAPACITY                  = 0x00000004, ///< just invalid (non-power-of-2) capacity
-    STK_STACK_CORRUPTION_INVALID_HASH                      = 0x00000008, ///< invalid hash value
+    STK_STACK_CORRUPTION_NULL                      = 0x00000001, ///< invalid
+    STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY   = 0x00000002, ///< size is more than capacity
+    STK_STACK_CORRUPTION_INVALID_CAPACITY          = 0x00000004, ///< just invalid (non-power-of-2) capacity
+    STK_STACK_CORRUPTION_POISONED                  = 0x00000008, ///< given stack is poisoned (e.g. was passed through stkStackRealloc function)
 
-    STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY               = 0x00000010, ///< damaged left canary
-    STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY              = 0x00000020, ///< damaged right canary
-    STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY               = 0x00000040, ///< damaged canary located after data block
+    STK_STACK_CORRUPTION_DAMAGED_HASH              = 0x00000010, ///< damaged hash value
+    STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY       = 0x00000020, ///< damaged left canary
+    STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY      = 0x00000040, ///< damaged right canary
+    STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY       = 0x00000080, ///< damaged canary located after data block
 } StkStackCorruptionBit;
 
 /// @brief corruption
@@ -155,13 +180,14 @@ const uint32_t STK_STACK_CORRUPTION_NOTHING = (StkStackCorruption)0;
 static void
 stkLogStackCorruption( StkStackCorruption corruption ) {
     stkLog("|");
-    if (corruption & STK_STACK_CORRUPTION_NULL                          ) stkLog(" invalid |");
-    if (corruption & STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY       ) stkLog(" size is more than capacity |");
-    if (corruption & STK_STACK_CORRUPTION_INVALID_CAPACITY              ) stkLog(" just invalid (non-power-of-2) capacity |");
-    if (corruption & STK_STACK_CORRUPTION_INVALID_HASH                  ) stkLog(" invalid hash value |");
-    if (corruption & STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY           ) stkLog(" damaged left canary |");
-    if (corruption & STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY          ) stkLog(" damaged right canary |");
-    if (corruption & STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY           ) stkLog(" damaged data canary |");
+    if (corruption & STK_STACK_CORRUPTION_NULL                     ) stkLog(" invalid |");
+    if (corruption & STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY  ) stkLog(" size is more than capacity |");
+    if (corruption & STK_STACK_CORRUPTION_INVALID_CAPACITY         ) stkLog(" just invalid (non-power-of-2) capacity |");
+    if (corruption & STK_STACK_CORRUPTION_POISONED                 ) stkLog(" poisoned (e.g. passed through stkReallocStack function) |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_HASH             ) stkLog(" invalid hash value |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_LEFT_CANARY      ) stkLog(" damaged left canary |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_RIGHT_CANARY     ) stkLog(" damaged right canary |");
+    if (corruption & STK_STACK_CORRUPTION_DAMAGED_DATA_CANARY      ) stkLog(" damaged data canary |");
 } // stkStackImplStatusStr function end
 
 /**
@@ -180,26 +206,30 @@ stkLogDebugInfo( const StkStackDebugInfo *const dbgInfo ) {
     );
 } // stkLogDebugInfo function end
 
-// stack validation function
-#define STK_PROPAGATE_STACK_ERROR(stk)                            \
-    do {                                                          \
-        StkStackCorruption status = stkStackCheckCorruption(stk); \
-        if (status != STK_STACK_CORRUPTION_NOTHING) {             \
-            stkLog("\nSTK VALIDATION ERROR.");                    \
-            stkLog("\n    CORRUPTION STATUS: ");                  \
-            stkLogStackCorruption(status);                        \
-            stkLog("\n    DUMP: ");                               \
-            stkLogStack(stk);                                     \
-            return STK_STATUS_CORRUPTED;                          \
-        }                                                         \
-    } while (false)
+// stack validation macro
+#ifdef STK_ENABLE_CORRUPTION_CHECKS
+    #define STK_PROPAGATE_STACK_CORRUPTED(stk)                        \
+        do {                                                          \
+            StkStackCorruption status = stkStackCheckCorruption(stk); \
+            if (status != STK_STACK_CORRUPTION_NOTHING) {             \
+                stkLog("\nSTK VALIDATION ERROR.");                    \
+                stkLog("\n    CORRUPTION STATUS: ");                  \
+                stkLogStackCorruption(status);                        \
+                stkLog("\n    DUMP: ");                               \
+                stkLogStack(stk);                                     \
+                return STK_STATUS_CORRUPTED;                          \
+            }                                                         \
+        } while (false)
+#else
+    #define STK_PROPAGATE_STACK_CORRUPTED(stk) do {  } while (false)
+#endif
 
+/// bad allocation error propagation macro
 #define STK_PROPAGATE_BAD_ALLOC(expr)    \
     do {                                 \
         if ((expr) == NULL)              \
             return STK_STATUS_BAD_ALLOC; \
     } while (false)
-
 
 // error propagation macro
 #define STK_PROPAGATE_ERROR_STATUS(operation)  \
@@ -228,7 +258,7 @@ stkLogStack( const StkStackImpl *stk ) {
     stkLog("\nelem size  : %d", stk->elementSize);
     stkLog("\nsize       : %d", stk->size);
 
-#if STK_ENABLE_DEBUG_INFO
+#ifdef STK_ENABLE_DEBUG_INFO
     stkLog("\ndebug info : ");
     stkLogDebugInfo(&stk->__debugInfo);
 #endif
@@ -307,15 +337,18 @@ static StkStackCorruption
 stkStackCheckCorruption( const StkStackImpl *stk ) {
     StkStackCorruption corruption = STK_STACK_CORRUPTION_NOTHING;
 
-    if (stk == NULL)
-        return corruption | STK_STACK_CORRUPTION_NULL;
+    if (stk == NULL) {
+        corruption |= STK_STACK_CORRUPTION_NULL;
 
+        // there is no checks that possible for null pointer
+        return corruption;
+    }
     if (!stkIsPowerOfTwo(stk->capacity))
-        corruption |=  STK_STACK_CORRUPTION_INVALID_CAPACITY;
+        corruption |= STK_STACK_CORRUPTION_INVALID_CAPACITY;
     if (stk->capacity < stk->size)
-        corruption |=  STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY;
+        corruption |= STK_STACK_CORRUPTION_SIZE_MORE_THAN_CAPACITY;
 
-#if STK_ENABLE_CANARIES
+#ifdef STK_ENABLE_CANARIES
     struct __StkCanaryInfo {
         StkStackCorruptionBit  corruptionBit;
         uint32_t               expectedCanary;
@@ -339,9 +372,9 @@ stkStackCheckCorruption( const StkStackImpl *stk ) {
     }
 #endif
 
-#if STK_ENABLE_HASHING
+#ifdef STK_ENABLE_HASHING
     if (!stkStackCheckHash(stk))
-        corruption |= STK_STACK_CORRUPTION_INVALID_HASH;
+        corruption |= STK_STACK_CORRUPTION_DAMAGED_HASH;
 #endif
 
     return corruption;
@@ -377,26 +410,33 @@ stkRoundCapacity( size_t number ) {
  * @param[in]     elemSize single stack element size
  * @param[in]     capacity new stack capacity
  * 
+ * @note also writes debug canary
+ * 
  * @return reallocated stack pointer (may be null)
  */
 static StkStackImpl *
 stkStackRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
-    // align data block
+#ifdef STK_ENABLE_POISONING
+    // Poison previous allocation
+    if (stk != NULL)
+        stkStackPoison(stk);
+#endif
 
+    // align data block
     size_t dataBlockSize;
     if (capacity == 0)
         dataBlockSize = 0;
     else
         dataBlockSize = elemSize * capacity;
 
-#if STK_ENABLE_CANARIES
+#ifdef STK_ENABLE_CANARIES
     dataBlockSize = stkSizeAlignUp(dataBlockSize, 4);
     dataBlockSize += STK_CANARY_COUNT * sizeof(uint32_t);
 #endif
 
     StkStackImpl *impl = (StkStackImpl *)realloc(stk, sizeof(StkStackImpl) + dataBlockSize - sizeof(stk->data));
 
-#if STK_ENABLE_CANARIES
+#ifdef STK_ENABLE_CANARIES
     {
         size_t offset = stkStackGetDataCanaryOffset(elemSize, capacity);
 
@@ -412,7 +452,7 @@ stkStackRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
 /**
  * @brief stack capacity extension function
  * 
- * @param[in,out] stk stack to extend
+ * @param[in,out] stk stack to extend (non-null)
  * 
  * @return operation status
  */
@@ -421,8 +461,6 @@ stkStackExtend( StkStackImpl **stk ) {
     assert(stk != NULL);
 
     StkStackImpl *imp = *stk;
-
-    STK_PROPAGATE_STACK_ERROR(imp);
 
     size_t newCapacity = imp->capacity * 2;
     if (newCapacity == 0)
@@ -487,16 +525,16 @@ __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack
     stk->capacity = capacity;
 
     // fill 
-#if STK_ENABLE_CANARIES
+#ifdef STK_ENABLE_CANARIES
     stkFillMemory32(&stk->__headingCanaries,  STK_debugContext.headingCanary,  8);
     stkFillMemory32(&stk->__trailingCanaries, STK_debugContext.trailingCanary, 8);
 #endif
 
-#if STK_ENABLE_HASHING
+#ifdef STK_ENABLE_HASHING
     stkStackRecalculateHash(stk);
 #endif
 
-    STK_PROPAGATE_STACK_ERROR(stk);
+    STK_PROPAGATE_STACK_CORRUPTED(stk);
 
     *dst = stk;
 
@@ -514,11 +552,11 @@ __stkStackCtorDbg(
 
     STK_PROPAGATE_ERROR_STATUS(__stkStackCtor(elementSize, initialCapacity, dst));
 
-#if STK_ENABLE_DEBUG_INFO
+#ifdef STK_ENABLE_DEBUG_INFO
     (*dst)->__debugInfo = debugInfo;
 #endif
 
-#if STK_ENABLE_HASHING
+#ifdef STK_ENABLE_HASHING
     stkStackRecalculateHash(*dst);
 #endif
 
@@ -527,12 +565,14 @@ __stkStackCtorDbg(
 
 StkStatus
 stkStackPush( StkStack *const stk, const void *const src ) {
+    STK_DEBUG_CONTEXT_GUARD;
+
     assert(stk != NULL);
     assert(src != NULL);
 
     StkStackImpl *imp = *stk;
 
-    STK_PROPAGATE_STACK_ERROR(imp);
+    STK_PROPAGATE_STACK_CORRUPTED(imp);
 
     // extend stack if needed
     if (imp->capacity == imp->size) {
@@ -545,11 +585,11 @@ stkStackPush( StkStack *const stk, const void *const src ) {
         memcpy((uint8_t *)imp->data + imp->size * imp->elementSize, src, imp->elementSize);
     imp->size += 1;
 
-#if STK_ENABLE_HASHING
+#ifdef STK_ENABLE_HASHING
     stkStackRecalculateHash(imp);
 #endif
 
-    STK_PROPAGATE_STACK_ERROR(imp);
+    STK_PROPAGATE_STACK_CORRUPTED(imp);
 
     return STK_STATUS_OK;
 } // stkStackPush function end
@@ -564,7 +604,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
 
     assert(imp != NULL);
 
-    STK_PROPAGATE_STACK_ERROR(imp);
+    STK_PROPAGATE_STACK_CORRUPTED(imp);
 
     if (imp->size == 0)
         return STK_STATUS_POP_ERROR; // TODO: this is an entirely different kind of error
@@ -579,21 +619,25 @@ stkStackPop( StkStack *const stk, void *dst ) {
         *stk = imp;
     }
 
-#if STK_ENABLE_HASHING
+#ifdef STK_ENABLE_HASHING
     stkStackRecalculateHash(imp);
 #endif
 
-    STK_PROPAGATE_STACK_ERROR(imp);
+    STK_PROPAGATE_STACK_CORRUPTED(imp);
 
     return STK_STATUS_OK;
 } // stkStackPop function end
 
 StkStatus
-stkStackDtor( StkStack stk ) {
+__stkStackDtor( StkStack *stk ) {
     STK_DEBUG_CONTEXT_GUARD;
 
-    STK_PROPAGATE_STACK_ERROR(stk);
-    free(stk); // TODO: idempotent destructor? free(stk), stk = {};
+    if (stk != NULL) {
+        STK_PROPAGATE_STACK_CORRUPTED(*stk);
+        free(*stk);
+        *stk = NULL;
+    }
+
     return STK_STATUS_OK;
 } // stkStackDtor function end
 
