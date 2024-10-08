@@ -29,7 +29,7 @@ stkInitDebugContext( void ) {
         STK_debugContext.headingCanary  = ((uint32_t)rand() << 16) | ((uint32_t)rand() <<  0);
         STK_debugContext.trailingCanary = ((uint32_t)rand() << 16) | ((uint32_t)rand() <<  0);
         STK_debugContext.dataCanary     = ((uint32_t)rand() << 16) | ((uint32_t)rand() <<  0);
-        STK_debugContext.handleMask        = ((uint64_t)rand() << 48) | ((uint64_t)rand() << 32) | ((uint64_t)rand() << 16) | ((uint64_t)rand() <<  0);
+        STK_debugContext.handleMask     = ((uint64_t)rand() << 48) | ((uint64_t)rand() << 32) | ((uint64_t)rand() << 16) | ((uint64_t)rand() <<  0);
 
         // to prevent any rand algorithm exploiting
         srand(time(NULL));
@@ -661,7 +661,7 @@ __stkStackDtor( StkStack *handle ) {
 
     if (handle != 0) {
         StkStackImpl *stk = stkStackFromHandle(*handle);
-        // it's not ok to submit corrupted stack
+        // it's not ok to destroy corrupted stack
         STK_PROPAGATE_STACK_CORRUPTED(stk);
         free(stk);
         *handle = 0;

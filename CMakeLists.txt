@@ -14,8 +14,13 @@ file(GLOB_RECURSE example_src
 
 add_executable (${PROJECT_NAME} ${example_src})
 
-# target_include_directories(${PROJECT_NAME} PRIVATE library/include)
+# Library customization example
+# set(STK_OVERRIDE_CONFIG          GLOBAL)
+# set(STK_ENABLE_CORRUPTION_CHECKS GLOBAL)
+
+# Add library
 add_subdirectory(library)
+
 target_link_libraries(${PROJECT_NAME} ss_stk)
 # Add source to the project's executable.
 

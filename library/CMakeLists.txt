@@ -9,7 +9,6 @@ project ("ss_stk")
 # Create source list
 file(GLOB_RECURSE ss_stk_src
     src/*.cpp
-    src/*.h
 )
 
 set(GLOB_RECURSE ss_stk_include
@@ -19,6 +18,7 @@ set(GLOB_RECURSE ss_stk_include
 # Add source to the project's executable.
 add_library (${PROJECT_NAME} ${ss_stk_src} ${ss_stk_include})
 
+# Include 'include' directory
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 # Set C++ standard
@@ -42,5 +42,23 @@ else ()
     message("Failed to identify target platform. Some validation checks are disabled.")
     add_compile_definitions(TARGET ${PROJECT_NAME} STK_PLATFORM_UNDEFINED)
 endif ()
+
+if (DEFINED STK_OVERRIDE_CONFIG)
+    add_compile_definitions(TARGET ${PROJECT_NAME} STK_OVERRIDE_CONFIG)
+
+    # repeating code...
+    macro(STK_HANDLE_CONFIG_ELEMENT ENTRY)
+        if (DEFINED ${ENTRY})
+            add_compile_definitions(TARGET ${PROJECT_NAME} ${ENTRY})
+        endif()
+    endmacro()
+
+    STK_HANDLE_CONFIG_ELEMENT(STK_ENABLE_CORRUPTION_CHECKS)
+    STK_HANDLE_CONFIG_ELEMENT(STK_ENABLE_DEBUG_INFO       )
+    STK_HANDLE_CONFIG_ELEMENT(STK_ENABLE_CANARIES         )
+    STK_HANDLE_CONFIG_ELEMENT(STK_ENABLE_HASHING          )
+    STK_HANDLE_CONFIG_ELEMENT(STK_ENABLE_POISONING        )
+    STK_HANDLE_CONFIG_ELEMENT(STK_ENABLE_HANDLE_ENCRYPTION)
+endif()
 
 # CMakeLists.txt file end
