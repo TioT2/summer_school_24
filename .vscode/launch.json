@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/ss_stk",
+            "program": "${workspaceRoot}/build/example",
             "preLaunchTask": "CMake: build",
             "args": [],
             "externalConsole": false,

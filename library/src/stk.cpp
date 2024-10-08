@@ -4,7 +4,7 @@
 
 #include "stk.h"
 
-#ifdef STK_ENABLE_CANARIES
+#if defined(STK_ENABLE_CANARIES) || defined(STK_ENABLE_HANDLE_ENCRYPTION)
     #define STK_ENABLE_DEBUG_CONTEXT
 #endif
 
@@ -14,11 +14,8 @@ static struct __StkDebugContext {
     uint32_t headingCanary;  ///< heading canary value
     uint32_t trailingCanary; ///< trailing canary value
     uint32_t dataCanary;     ///< data block canary value
-} STK_debugContext = {
-    .isInitialized = false,
-    .headingCanary = 0,
-    .trailingCanary = 0,
-};
+    size_t   handleMask;     ///< pointer mask
+} STK_debugContext = { .isInitialized = false };
 
 /**
  * @brief debug context initialization function
@@ -26,14 +23,16 @@ static struct __StkDebugContext {
 static void
 stkInitDebugContext( void ) {
     if (!STK_debugContext.isInitialized) {
-        time_t now = time(NULL);
-
-        srand(now);
+        srand(time(NULL));
 
         STK_debugContext.isInitialized  = true;
-        STK_debugContext.headingCanary  = ((uint32_t)rand() << 16) | rand();
-        STK_debugContext.trailingCanary = ((uint32_t)rand() << 16) | rand();
-        STK_debugContext.dataCanary     = ((uint32_t)rand() << 16) | rand();
+        STK_debugContext.headingCanary  = ((uint32_t)rand() << 16) | ((uint32_t)rand() <<  0);
+        STK_debugContext.trailingCanary = ((uint32_t)rand() << 16) | ((uint32_t)rand() <<  0);
+        STK_debugContext.dataCanary     = ((uint32_t)rand() << 16) | ((uint32_t)rand() <<  0);
+        STK_debugContext.handleMask        = ((uint64_t)rand() << 48) | ((uint64_t)rand() << 32) | ((uint64_t)rand() << 16) | ((uint64_t)rand() <<  0);
+
+        // to prevent any rand algorithm exploiting
+        srand(time(NULL));
     }
 } // stkInitDebugContext function end
 
@@ -100,6 +99,38 @@ typedef struct __StkStackImpl {
 
     uint64_t          data[1];                              ///< data buffer
 } StkStackImpl;
+
+/**
+ * @brief stack handle getting function
+ * 
+ * @param stack stack to get handle of
+ * 
+ * @return stack handle
+ */
+inline static StkStack
+stkStackGetHandle( StkStackImpl *stack ) {
+#ifdef STK_ENABLE_HANDLE_ENCRYPTION
+    return (StkStack)((size_t)stack ^ STK_debugContext.handleMask);
+#else
+    return (StkStack)stack;
+#endif
+} // stkStackGetHandle function end
+
+/**
+ * @brief stack pointer from handle getting function
+ * 
+ * @param handle handle to get corresponding stack for
+ * 
+ * @return stack pointer
+ */
+inline static StkStackImpl *
+stkStackFromHandle( StkStack handle ) {
+#ifdef STK_ENABLE_HANDLE_ENCRYPTION
+    return (StkStackImpl *)(handle ^ STK_debugContext.handleMask);
+#else
+    return (StkStackImpl *)handle;
+#endif
+} // stkStackFromHandle function end
 
 /// 32-bit allocation poison value
 const uint32_t STK_ALLOCATION_POISON32 = (uint32_t)0xDEDC0DE;
@@ -416,12 +447,6 @@ stkRoundCapacity( size_t number ) {
  */
 static StkStackImpl *
 stkStackRealloc( StkStackImpl *stk, size_t elemSize, size_t capacity ) {
-#ifdef STK_ENABLE_POISONING
-    // Poison previous allocation
-    if (stk != NULL)
-        stkStackPoison(stk);
-#endif
-
     // align data block
     size_t dataBlockSize;
     if (capacity == 0)
@@ -536,7 +561,7 @@ __stkStackCtor( const size_t elementSize, const size_t initialCapacity, StkStack
 
     STK_PROPAGATE_STACK_CORRUPTED(stk);
 
-    *dst = stk;
+    *dst = stkStackGetHandle(stk);
 
     return STK_STATUS_OK;
 } // __SstkStackCtor function end
@@ -552,12 +577,14 @@ __stkStackCtorDbg(
 
     STK_PROPAGATE_ERROR_STATUS(__stkStackCtor(elementSize, initialCapacity, dst));
 
+    StkStackImpl *stack = stkStackFromHandle(*dst);
+
 #ifdef STK_ENABLE_DEBUG_INFO
-    (*dst)->__debugInfo = debugInfo;
+    stack->__debugInfo = debugInfo;
 #endif
 
 #ifdef STK_ENABLE_HASHING
-    stkStackRecalculateHash(*dst);
+    stkStackRecalculateHash(stack);
 #endif
 
     return STK_STATUS_OK;
@@ -570,14 +597,14 @@ stkStackPush( StkStack *const stk, const void *const src ) {
     assert(stk != NULL);
     assert(src != NULL);
 
-    StkStackImpl *imp = *stk;
+    StkStackImpl *imp = stkStackFromHandle(*stk);
 
     STK_PROPAGATE_STACK_CORRUPTED(imp);
 
     // extend stack if needed
     if (imp->capacity == imp->size) {
         STK_PROPAGATE_ERROR_STATUS(stkStackExtend(&imp));
-        *stk = imp;
+        *stk = stkStackGetHandle(imp);
     }
 
     // actually, copy element
@@ -600,7 +627,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
 
     assert(stk != NULL);
 
-    StkStackImpl *imp = *stk;
+    StkStackImpl *imp = stkStackFromHandle(*stk);
 
     assert(imp != NULL);
 
@@ -616,7 +643,7 @@ stkStackPop( StkStack *const stk, void *dst ) {
 
     if (imp->size < imp->capacity / 4) {
         STK_PROPAGATE_ERROR_STATUS(stkStackShrink(&imp));
-        *stk = imp;
+        *stk = stkStackGetHandle(imp);
     }
 
 #ifdef STK_ENABLE_HASHING
@@ -629,13 +656,15 @@ stkStackPop( StkStack *const stk, void *dst ) {
 } // stkStackPop function end
 
 StkStatus
-__stkStackDtor( StkStack *stk ) {
+__stkStackDtor( StkStack *handle ) {
     STK_DEBUG_CONTEXT_GUARD;
 
-    if (stk != NULL) {
-        STK_PROPAGATE_STACK_CORRUPTED(*stk);
-        free(*stk);
-        *stk = NULL;
+    if (handle != 0) {
+        StkStackImpl *stk = stkStackFromHandle(*handle);
+        // it's not ok to submit corrupted stack
+        STK_PROPAGATE_STACK_CORRUPTED(stk);
+        free(stk);
+        *handle = 0;
     }
 
     return STK_STATUS_OK;

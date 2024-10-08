@@ -26,6 +26,7 @@
         #define STK_ENABLE_CANARIES
         #define STK_ENABLE_HASHING
         #define STK_ENABLE_POISONING
+        #define STK_ENABLE_HANDLE_ENCRYPTION
     #endif
 #endif
 
@@ -38,8 +39,8 @@
 void
 stkLog( const char *fstr, ... );
 
-/// Stack implementation
-typedef struct __StkStackImpl *StkStack;
+/// Stack handle
+typedef uint64_t StkStack;
 
 /// stack-related operation status
 typedef enum __StkStatus {

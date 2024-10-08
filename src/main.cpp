@@ -1,4 +1,4 @@
-#include "stk.h"
+#include <stk.h>
 
 int
 main( void ) {
@@ -21,12 +21,9 @@ main( void ) {
         printf("%d\n", temp);
     }
 
-    // produce error
-    *((int *)stack + 2) = 47;
     stkStackDtor(stack);
 
     return 0;
 } // main function end
 
 // main.cpp function end
-
