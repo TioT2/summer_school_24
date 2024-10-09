@@ -35,21 +35,21 @@ target_compile_definitions(${PROJECT_NAME}
 
 # Add platform-identifying definitions
 if (WIN32)
-    add_compile_definitions(TARGET ${PROJECT_NAME} STK_PLATOFRM_WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC STK_PLATFORM_WIN32)
 elseif (UNIX)
-    add_compile_definitions(TARGET ${PROJECT_NAME} STK_PLATOFRM_UNIX)
+target_compile_definitions(${PROJECT_NAME} PUBLIC STK_PLATFORM_UNIX)
 else ()
     message("Failed to identify target platform. Some validation checks are disabled.")
-    add_compile_definitions(TARGET ${PROJECT_NAME} STK_PLATFORM_UNDEFINED)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC STK_PLATFORM_UNDEFINED)
 endif ()
 
 if (DEFINED STK_OVERRIDE_CONFIG)
-    add_compile_definitions(TARGET ${PROJECT_NAME} STK_OVERRIDE_CONFIG)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC STK_OVERRIDE_CONFIG)
 
     # repeating code...
     macro(STK_HANDLE_CONFIG_ELEMENT ENTRY)
         if (DEFINED ${ENTRY})
-            add_compile_definitions(TARGET ${PROJECT_NAME} ${ENTRY})
+            target_compile_definitions(${PROJECT_NAME} PUBLIC ${ENTRY})
         endif()
     endmacro()
 

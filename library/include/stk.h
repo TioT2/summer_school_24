@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "stk_hash.h"
+#include "stk_memory.h"
 
 // check for debug info global override and if not then define own based on system debug flag
 #ifndef STK_OVERRIDE_CONFIG
@@ -26,6 +27,7 @@
         #define STK_ENABLE_CANARIES
         #define STK_ENABLE_HASHING
         #define STK_ENABLE_POISONING
+        #define STK_ENABLE_MEMORY_ACCESS_CHECKS
         #define STK_ENABLE_HANDLE_ENCRYPTION
     #endif
 #endif

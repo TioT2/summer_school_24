@@ -14,6 +14,9 @@ file(GLOB_RECURSE example_src
 
 add_executable (${PROJECT_NAME} ${example_src})
 
+# Set C++ standard
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+
 # Library customization example
 # set(STK_OVERRIDE_CONFIG          GLOBAL)
 # set(STK_ENABLE_CORRUPTION_CHECKS GLOBAL)
