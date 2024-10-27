@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{337f1176-e9b0-47c2-8bbc-960d06f74929}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Equation solver">
+      <UniqueIdentifier>{a293e850-83c4-4d8d-9556-4c67d42abf50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Command line interface utils">
+      <UniqueIdentifier>{2615f10a-638c-4430-a62e-e2d786d9e4a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Equation solver\Test">
+      <UniqueIdentifier>{f8922532-65c5-437d-96ca-8198454f5ff1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Application">
+      <UniqueIdentifier>{3ac92e4c-d387-4d31-8b65-62fb6988cf6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Application\Executor interface">
+      <UniqueIdentifier>{c53375c7-e3da-4f53-b781-a777e401c2be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Application\Executor implementation">
+      <UniqueIdentifier>{0fb8c9c1-f2e1-4b35-9279-df2b7806302a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqs\sqs.cpp">
+      <Filter>Source\Equation solver</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cli\cli_parameter_iterator.cpp">
+      <Filter>Source\Command line interface utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cli\cli.cpp">
+      <Filter>Source\Command line interface utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqs\test\sqs_test.cpp">
+      <Filter>Source\Equation solver\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqs\test\sqs_test_set.cpp">
+      <Filter>Source\Equation solver\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app_client.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app_daemon.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\executor_interface\app_executor_interface.cpp">
+      <Filter>Source\Application\Executor interface</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\executor_impl\app_executor_impl.cpp">
+      <Filter>Source\Application\Executor implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\executor_impl\app_executor_impl_signal.cpp">
+      <Filter>Source\Application\Executor implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\app_help.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\sqs\sqs.h">
+      <Filter>Source\Equation solver</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqs\sqs_common.h">
+      <Filter>Source\Equation solver</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqs\sqs_solver.h">
+      <Filter>Source\Equation solver</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cli\cli.h">
+      <Filter>Source\Command line interface utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqs\test\sqs_test.h">
+      <Filter>Source\Equation solver\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\app.h">
+      <Filter>Source\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\executor_interface\app_executor_interface.h">
+      <Filter>Source\Application\Executor interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\executor_impl\app_executor_impl.h">
+      <Filter>Source\Application\Executor implementation</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
