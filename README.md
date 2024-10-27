@@ -1,0 +1,1 @@
+# 2024 MIPT CSEsp Summer school project collection
